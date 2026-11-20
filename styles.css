@@ -242,7 +242,7 @@ textarea {
 .add-frame-button:hover { border-color: var(--lime); background: rgba(211,243,107,.1); color: var(--lime); }
 .frame-help { color: #858390; font-size: 9px; }
 .frame-help span { color: #656470; }
-#character-count { margin-left: auto; color: #777684; font-size: 9px; white-space: nowrap; }
+.prompt-limit-note { margin-left: auto; color: #777684; font-size: 9px; white-space: nowrap; }
 .prompt-options {
   display: flex;
   justify-content: flex-start;

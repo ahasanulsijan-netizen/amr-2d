@@ -42,7 +42,6 @@
   const title = document.querySelector("#scene-title");
   const sceneLabel = document.querySelector("#scene-label");
   const statusMessage = document.querySelector("#status-message");
-  const characterCount = document.querySelector("#character-count");
   const exportButton = document.querySelector("#export-button");
   const videoFormat = document.querySelector("#video-format");
   const frameSize = document.querySelector("#frame-size");
@@ -1109,7 +1108,6 @@
   }
 
   function updatePrompt() {
-    characterCount.textContent = `${promptInput.value.length} chars · no limit`;
     promptInput.style.height = "auto";
     promptInput.style.height = `${promptInput.scrollHeight}px`;
     statusMessage.textContent = "";
