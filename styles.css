@@ -320,6 +320,24 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   outline-offset: 3px;
 }
 
+@media (min-width: 901px) {
+  .workspace {
+    margin: clamp(24px, 4vh, 42px) auto 32px;
+    gap: clamp(24px, 3vw, 54px);
+  }
+  .stage-heading { margin-bottom: 12px; }
+  .stage-frame { display: flex; justify-content: center; }
+  .stage-frame canvas {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: min(56vh, 600px);
+    object-fit: contain;
+  }
+  .control-panel { position: sticky; top: 20px; }
+  .panel-top { margin-bottom: 20px; }
+}
+
 @media (max-width: 900px) {
   .workspace { grid-template-columns: minmax(0, 1fr) 300px; gap: 25px; }
   .control-panel { padding: 20px 17px 14px; }
