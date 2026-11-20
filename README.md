@@ -8,7 +8,7 @@ Open [amr 2d](https://ahasanulsijan-netizen.github.io/amr-2d/) or double-click `
 
 ## Create and export
 
-Enter a prompt such as “a little rocket in a starry night,” choose a video length, and click **Generate video** once. The scene is created and recorded locally; after it finishes, click **Download** to save the WebM. Keep the browser tab open while it renders. Try a rocket, cat, flower, bird, ball, or landscape. Use the timeline and play button to preview the looping animation. The **+** button in the prompt box adds local reference-frame thumbnails; they are not uploaded or used to generate the scene.
+Enter a prompt such as “a little rocket in a starry night,” choose a video length, and click **Generate video** once. The preview timeline updates to match that length. The scene is created and recorded locally; after it finishes, click **Download** to save the WebM. Keep the browser tab open while it renders. Try a rocket, cat, flower, bird, ball, or landscape. Use the timeline and play button to preview the looping animation. The **+** button in the prompt box adds local reference-frame thumbnails; they are not uploaded or used to generate the scene.
 
 **Export SVG** downloads an animated vector file that can be opened in a browser or edited in vector software. Choose **1 minute**, **3 minutes**, or **5 minutes** from the video length selector.
 

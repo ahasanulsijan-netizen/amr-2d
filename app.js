@@ -3,7 +3,6 @@
 (() => {
   const WIDTH = 960;
   const HEIGHT = 600;
-  const DURATION = 8;
   const FPS = 60;
   const canvas = document.querySelector("#animation-canvas");
   const context = canvas.getContext("2d");
@@ -24,6 +23,7 @@
   const cancelVideoButton = document.querySelector("#cancel-video-button");
   const downloadVideoButton = document.querySelector("#download-video-button");
   const timecode = document.querySelector("#timecode");
+  const timeEnd = document.querySelector("#time-end");
 
   const sceneNames = {
     rocket: "ROCKET · NIGHT SKY",
@@ -44,6 +44,20 @@
   const referenceFrames = [];
   let activeRecording = null;
   let generatedVideoUrl = null;
+
+  function formatTime(seconds) {
+    const total = Math.floor(seconds);
+    const minutes = Math.floor(total / 60);
+    return `${String(minutes).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  }
+
+  function updateTimelineDuration() {
+    const duration = Number(videoLength.value);
+    timeline.max = String(duration);
+    state.time = Math.min(state.time, duration);
+    timeEnd.textContent = formatTime(duration);
+    render(state.time);
+  }
 
   function resizeCanvas() {
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -373,7 +387,7 @@
     else if (state.scene === "ball") drawBall(time);
     else drawLandscape(time);
     timeline.value = String(time);
-    timecode.textContent = `00:${String(Math.floor(time)).padStart(2, "0")}`;
+    timecode.textContent = formatTime(time);
   }
 
   function selectScene(prompt) {
@@ -471,6 +485,7 @@
     state.lastClock = 0;
     render(state.time);
   });
+  videoLength.addEventListener("change", updateTimelineDuration);
 
   function escapeXml(value) {
     return value.replace(/[<>&'"]/g, (character) => ({
@@ -580,6 +595,7 @@
       activeRecording = null;
       stream.getTracks().forEach((track) => track.stop());
       generateVideoButton.disabled = false;
+      videoLength.disabled = false;
       generateVideoButton.innerHTML = '<span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span>';
       cancelVideoButton.hidden = true;
       if (!recording || recording.cancelled) {
@@ -600,6 +616,7 @@
 
     activeRecording = { recorder, cancelled: false, stopTimer: null, progressTimer: null };
     generateVideoButton.disabled = true;
+    videoLength.disabled = true;
     generateVideoButton.textContent = "Generating video…";
     cancelVideoButton.hidden = false;
     setPlayback(true);
@@ -610,6 +627,7 @@
       activeRecording = null;
       stream.getTracks().forEach((track) => track.stop());
       generateVideoButton.disabled = false;
+      videoLength.disabled = false;
       generateVideoButton.innerHTML = '<span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span>';
       cancelVideoButton.hidden = true;
       setPlayback(previousPlayback);
@@ -635,7 +653,8 @@
     if (state.playing && timestamp - state.lastDraw >= 1000 / FPS) {
       if (state.lastClock) {
         state.time += Math.min((timestamp - state.lastClock) / 1000, .1);
-        if (state.time >= DURATION) state.time %= DURATION;
+        const duration = Number(videoLength.value);
+        if (state.time >= duration) state.time %= duration;
       }
       state.lastClock = timestamp;
       state.lastDraw = timestamp;
@@ -645,6 +664,7 @@
   }
 
   updatePrompt();
+  updateTimelineDuration();
   resizeCanvas();
   requestAnimationFrame(animate);
   window.addEventListener("resize", resizeCanvas);
