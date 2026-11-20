@@ -4,6 +4,7 @@
   const WIDTH = 960;
   const HEIGHT = 600;
   const DURATION = 8;
+  const FPS = 60;
   const canvas = document.querySelector("#animation-canvas");
   const context = canvas.getContext("2d");
   const promptInput = document.querySelector("#prompt-input");
@@ -13,15 +14,15 @@
   const playButton = document.querySelector("#play-button");
   const playIcon = document.querySelector("#play-icon");
   const timeline = document.querySelector("#timeline");
-  const fpsSelect = document.querySelector("#fps-select");
   const title = document.querySelector("#scene-title");
   const sceneLabel = document.querySelector("#scene-label");
   const statusMessage = document.querySelector("#status-message");
   const characterCount = document.querySelector("#character-count");
   const exportButton = document.querySelector("#export-button");
   const videoLength = document.querySelector("#video-length");
-  const videoButton = document.querySelector("#video-button");
+  const generateVideoButton = document.querySelector("#generate-video-button");
   const cancelVideoButton = document.querySelector("#cancel-video-button");
+  const downloadVideoButton = document.querySelector("#download-video-button");
   const timecode = document.querySelector("#timecode");
 
   const sceneNames = {
@@ -37,12 +38,12 @@
     title: promptInput.value.trim(),
     playing: true,
     time: 0,
-    lastFrame: 0,
     lastDraw: 0,
     lastClock: 0
   };
   const referenceFrames = [];
   let activeRecording = null;
+  let generatedVideoUrl = null;
 
   function resizeCanvas() {
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -444,6 +445,7 @@
       promptInput.reportValidity();
       return;
     }
+    if (activeRecording) return;
     state.scene = selectScene(prompt);
     state.title = prompt;
     state.time = 0;
@@ -452,8 +454,9 @@
     state.playing = true;
     playButton.setAttribute("aria-label", "Pause animation");
     playIcon.textContent = "Ⅱ";
-    statusMessage.textContent = "Your scene is ready — adjust the prompt and generate again to explore.";
+    statusMessage.textContent = "Preparing your video…";
     render(0);
+    startVideoRecording();
   });
 
   playButton.addEventListener("click", () => {
@@ -533,13 +536,12 @@
       return;
     }
 
-    const fps = Number(fpsSelect.value);
     const duration = Number(videoLength.value);
     let stream;
     let mimeType;
     let recorder;
     try {
-      stream = canvas.captureStream(fps);
+      stream = canvas.captureStream(FPS);
       mimeType = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"]
         .find((type) => MediaRecorder.isTypeSupported(type));
     } catch (error) {
@@ -577,58 +579,60 @@
       const recording = activeRecording;
       activeRecording = null;
       stream.getTracks().forEach((track) => track.stop());
-      videoButton.disabled = false;
-      videoButton.innerHTML = '<span aria-hidden="true">●</span> Create WebM video';
+      generateVideoButton.disabled = false;
+      generateVideoButton.innerHTML = '<span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span>';
       cancelVideoButton.hidden = true;
-      setPlayback(previousPlayback);
       if (!recording || recording.cancelled) {
-        statusMessage.textContent = "Video recording cancelled.";
+        setPlayback(previousPlayback);
+        statusMessage.textContent = "Video generation cancelled.";
         return;
       }
       const blob = new Blob(chunks, { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${state.scene}-${duration / 60}min.webm`;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      statusMessage.textContent = `${durationLabel} WebM video downloaded.`;
+      if (generatedVideoUrl) URL.revokeObjectURL(generatedVideoUrl);
+      generatedVideoUrl = URL.createObjectURL(blob);
+      downloadVideoButton.href = generatedVideoUrl;
+      downloadVideoButton.download = `${state.scene}-${duration / 60}min.webm`;
+      downloadVideoButton.textContent = `Download ${duration / 60}-minute video`;
+      downloadVideoButton.hidden = false;
+      setPlayback(previousPlayback);
+      statusMessage.textContent = `${durationLabel} video is ready to download.`;
     };
 
     activeRecording = { recorder, cancelled: false, stopTimer: null, progressTimer: null };
-    videoButton.disabled = true;
-    videoButton.textContent = "Recording video…";
+    generateVideoButton.disabled = true;
+    generateVideoButton.textContent = "Generating video…";
     cancelVideoButton.hidden = false;
     setPlayback(true);
-    statusMessage.textContent = `Recording ${durationLabel} video locally. Keep this tab open.`;
+    statusMessage.textContent = `Generating ${durationLabel} video locally. Keep this tab open.`;
     try {
       recorder.start(1000);
     } catch (error) {
       activeRecording = null;
       stream.getTracks().forEach((track) => track.stop());
-      videoButton.disabled = false;
-      videoButton.innerHTML = '<span aria-hidden="true">●</span> Create WebM video';
+      generateVideoButton.disabled = false;
+      generateVideoButton.innerHTML = '<span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span>';
       cancelVideoButton.hidden = true;
       setPlayback(previousPlayback);
       statusMessage.textContent = `Could not start video recording: ${error.message}`;
       return;
     }
+    if (generatedVideoUrl) URL.revokeObjectURL(generatedVideoUrl);
+    generatedVideoUrl = null;
+    downloadVideoButton.removeAttribute("href");
+    downloadVideoButton.hidden = true;
     activeRecording.stopTimer = window.setTimeout(() => stopRecording(false), duration * 1000);
     activeRecording.progressTimer = window.setInterval(() => {
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       const minutes = Math.floor(elapsed / 60);
       const seconds = String(elapsed % 60).padStart(2, "0");
-      statusMessage.textContent = `Recording ${durationLabel} video locally… ${minutes}:${seconds} elapsed.`;
+      statusMessage.textContent = `Generating ${durationLabel} video… ${minutes}:${seconds} elapsed.`;
     }, 1000);
   }
 
-  videoButton.addEventListener("click", startVideoRecording);
   cancelVideoButton.addEventListener("click", () => stopRecording(true));
 
   function animate(timestamp) {
-    if (state.playing && timestamp - state.lastDraw >= 1000 / Number(fpsSelect.value)) {
+    if (state.playing && timestamp - state.lastDraw >= 1000 / FPS) {
       if (state.lastClock) {
         state.time += Math.min((timestamp - state.lastClock) / 1000, .1);
         if (state.time >= DURATION) state.time %= DURATION;
@@ -646,5 +650,6 @@
   window.addEventListener("resize", resizeCanvas);
   window.addEventListener("pagehide", () => {
     referenceFrames.forEach((frame) => URL.revokeObjectURL(frame.url));
+    if (generatedVideoUrl) URL.revokeObjectURL(generatedVideoUrl);
   });
 })();
