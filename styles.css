@@ -167,6 +167,22 @@ canvas { width: 100%; aspect-ratio: 8 / 5; display: block; }
 .timecode { color: #c1bfca; font-size: 10px; white-space: nowrap; }
 .time-end { color: #83828e; }
 .timeline { min-width: 40px; width: 100%; accent-color: var(--lime); cursor: pointer; }
+.transport-length-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  color: #858390;
+  font: 9px "DM Mono", Consolas, monospace;
+}
+.transport-length-control select {
+  border: 1px solid #44434f;
+  border-radius: 5px;
+  padding: 5px 7px;
+  background: #20202b;
+  color: #efedf4;
+  font: 10px "DM Mono", Consolas, monospace;
+}
 .canvas-note { color: #8f8e9b; font-size: 11px; margin: 14px 0 0; }
 .canvas-note span { color: var(--purple); margin-right: 5px; }
 
@@ -224,25 +240,7 @@ textarea {
 .add-frame-button:hover { border-color: var(--lime); background: rgba(211,243,107,.1); color: var(--lime); }
 .frame-help { color: #858390; font-size: 9px; }
 .frame-help span { color: #656470; }
-#character-count { color: #777684; font-size: 9px; white-space: nowrap; }
-.prompt-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-top: 1px solid #2a2934;
-  background: rgba(255,255,255,.018);
-}
-.video-length-control { display: flex; align-items: center; gap: 9px; color: #858390; font: 9px "DM Mono", Consolas, monospace; }
-.video-length-control select {
-  border: 1px solid #44434f;
-  border-radius: 5px;
-  padding: 5px 8px;
-  background: #20202b;
-  color: #efedf4;
-  font: 10px "DM Mono", Consolas, monospace;
-}
+#character-count { margin-left: auto; color: #777684; font-size: 9px; white-space: nowrap; }
 .reference-frames { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 11px 9px; }
 .frame-chip { position: relative; width: 54px; height: 42px; overflow: hidden; border: 1px solid #4a4956; border-radius: 4px; background: #22222d; }
 .frame-chip img { width: 100%; height: 100%; display: block; object-fit: cover; }
@@ -359,5 +357,9 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   .brand { font-size: 17px; }
   .transport { gap: 8px; padding: 0 8px; }
   .timecode { font-size: 9px; }
+  .timeline { min-width: 24px; }
+  .transport-length-control { gap: 4px; }
+  .transport-length-control > span { display: none; }
+  .transport-length-control select { max-width: 72px; padding: 4px; font-size: 9px; }
   .footer { font-size: 7px; }
 }
