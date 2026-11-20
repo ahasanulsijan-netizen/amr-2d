@@ -19,15 +19,17 @@
     { type: "robot", name: "robot", pattern: /\b(robot|android|mech|cyborg)\b/ },
     { type: "monster", name: "monster", pattern: /\b(monster|demon|alien|ghost|vampire|creature)\b/ },
     { type: "cat", name: "cat", pattern: /\b(cat|kitten|kitty|feline)\b/ },
-    { type: "dog", name: "dog", pattern: /\b(dog|puppy|wolf|fox)\b/ },
+    { type: "dog", name: "dog", pattern: /\b(dog|puppy|wolf)\b/ },
+    { type: "fox", name: "fox", pattern: /\b(fox|vixen)\b/ },
     { type: "horse", name: "horse", pattern: /\b(horse|pony|unicorn|deer|lion|tiger|bear|rabbit|bunny|mouse)\b/ },
-    { type: "bird", name: "bird", pattern: /\b(bird|sparrow|parrot|owl|duck|eagle)\b/ },
+    { type: "bird", name: "bird", pattern: /\b(bird|sparrow|parrot|duck|eagle)\b/ },
+    { type: "owl", name: "owl", pattern: /\b(owl)\b/ },
     { type: "fish", name: "sea creature", pattern: /\b(fish|whale|shark|dolphin|octopus|jellyfish)\b/ },
     { type: "vehicle", name: "vehicle", pattern: /\b(car|truck|bus|motorcycle|motorbike|train|plane|airplane|aircraft|helicopter|boat|ship)\b/ },
     { type: "plant", name: "plant", pattern: /\b(tree|flower|plant|mushroom|rose|tulip|daisy)\b/ },
     { type: "building", name: "building", pattern: /\b(castle|house|cottage|tower|building|temple)\b/ },
     { type: "planet", name: "planet", pattern: /\b(planet|moon|comet|meteor|stars?)\b/ },
-    { type: "food", name: "food", pattern: /\b(pizza|cake|cupcake|apple|orange|fruit|ice cream)\b/ },
+    { type: "food", name: "food", pattern: /\b(pizza|cake|cupcake|apple|fruit|ice cream)\b/ },
     { type: "ball", name: "ball", pattern: /\b(ball|football|basketball)\b/ }
   ];
   const canvas = document.querySelector("#animation-canvas");
@@ -699,6 +701,104 @@
         drawCloud((i * 211 + Math.sin(t * .2 + i) * 8) % (WIDTH + 90) - 40, 105 + (i % 3) * 55, .45 + (i % 2) * .2);
       }
     }
+
+    if (scene.forest && (scene.background !== "forest" || scene.pineForest)) {
+      [48, 142, 235, 725, 818, 912].forEach((x, index) => {
+        const base = 438 + (index % 2) * 18;
+        const height = 145 + (index % 3) * 18;
+        context.fillStyle = "#59483f";
+        context.fillRect(x - 5, base - 4, 10, 48);
+        for (let layer = 0; layer < 3; layer += 1) {
+          const top = base - height + layer * 34;
+          context.fillStyle = index % 2 ? "#365f55" : "#477166";
+          context.beginPath();
+          context.moveTo(x, top);
+          context.lineTo(x - 27 + layer * 7, top + 50);
+          context.lineTo(x + 27 - layer * 7, top + 50);
+          context.closePath();
+          context.fill();
+          if (scene.background === "snow") {
+            line(context, "rgba(242,250,255,.82)", 5, () => {
+              context.moveTo(x - 16 + layer * 5, top + 31);
+              context.lineTo(x, top + 20);
+              context.lineTo(x + 13 - layer * 4, top + 31);
+            });
+          }
+        }
+      });
+    }
+
+    if (scene.pond) {
+      ellipse(context, 480, 526, 302, 65, scene.ice ? "#718f9e" : "#285d72");
+      ellipse(context, 480, 519, 278, 51, scene.ice ? "#abd8e0" : "#3787a0");
+      line(context, "rgba(239,252,255,.85)", 5, () => {
+        context.moveTo(270, 507);
+        context.quadraticCurveTo(340, 494, 393, 508);
+        context.moveTo(505, 526);
+        context.quadraticCurveTo(590, 508, 678, 524);
+      });
+      if (scene.ice) {
+        line(context, "rgba(83,126,150,.7)", 3, () => {
+          context.moveTo(480, 505);
+          context.lineTo(457, 525);
+          context.lineTo(472, 537);
+          context.lineTo(448, 551);
+          context.moveTo(480, 505);
+          context.lineTo(507, 519);
+          context.lineTo(496, 535);
+          context.lineTo(523, 548);
+        });
+      }
+    }
+
+    if (scene.watercolor) {
+      context.save();
+      context.globalCompositeOperation = "multiply";
+      const washes = ["rgba(62,88,133,.18)", "rgba(227,167,93,.14)", "rgba(90,145,128,.13)", "rgba(143,127,178,.12)"];
+      for (let i = 0; i < 7; i += 1) {
+        const x = (scene.seed + i * 173) % WIDTH;
+        const y = 110 + ((scene.seed >>> (i % 16)) + i * 67) % 360;
+        const radius = 72 + (i % 3) * 24;
+        const wash = context.createRadialGradient(x, y, 4, x, y, radius);
+        wash.addColorStop(0, washes[i % washes.length]);
+        wash.addColorStop(1, "rgba(255,255,255,0)");
+        context.fillStyle = wash;
+        context.beginPath();
+        context.ellipse(x, y, radius, radius * .62, (i % 3) * .3, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.restore();
+    }
+  }
+
+  function drawGeneratedLantern(x, y, scale, t, color, opacity) {
+    context.save();
+    context.translate(x, y);
+    context.scale(scale, scale);
+    context.globalAlpha = opacity;
+    context.globalCompositeOperation = "lighter";
+    context.shadowColor = color;
+    context.shadowBlur = 25 + Math.sin(t * 3 + x) * 5;
+    ellipse(context, 0, 0, 24, 29, color);
+    context.globalCompositeOperation = "source-over";
+    context.shadowBlur = 0;
+    line(context, "#554a55", 3, () => {
+      context.moveTo(-8, -20);
+      context.quadraticCurveTo(0, -36, 8, -20);
+    });
+    roundedRect(context, -12, -20, 24, 37, 5);
+    context.fillStyle = "#e9a64e";
+    context.fill();
+    roundedRect(context, -8, -15, 16, 25, 4);
+    context.fillStyle = color;
+    context.fill();
+    context.fillStyle = "#fff2b0";
+    context.beginPath();
+    context.moveTo(0, -11);
+    context.quadraticCurveTo(8, -2, 0, 5);
+    context.quadraticCurveTo(-7, -2, 0, -11);
+    context.fill();
+    context.restore();
   }
 
   function drawGeneratedEntity(entity, x, y, scale, t, action) {
@@ -819,6 +919,53 @@
         line(context, entity.accent, 5, () => { context.moveTo(43, -42); context.lineTo(110, -104); });
         context.shadowBlur = 0;
       }
+    } else if (entity.type === "owl") {
+      const wingLift = Math.sin(t * 3) * 10;
+      context.fillStyle = entity.dark;
+      context.beginPath();
+      context.moveTo(-24, -77);
+      context.lineTo(-72, -91 - wingLift);
+      context.lineTo(-59, -35);
+      context.lineTo(-19, -31);
+      context.closePath();
+      context.fill();
+      context.beginPath();
+      context.moveTo(24, -77);
+      context.lineTo(72, -91 + wingLift);
+      context.lineTo(59, -35);
+      context.lineTo(19, -31);
+      context.closePath();
+      context.fill();
+      ellipse(context, 0, -67, 48, 64, entity.color);
+      ellipse(context, 0, -43, 29, 34, entity.light);
+      context.fillStyle = entity.color;
+      context.beginPath();
+      context.moveTo(-35, -105); context.lineTo(-31, -137); context.lineTo(-7, -113);
+      context.moveTo(7, -113); context.lineTo(31, -137); context.lineTo(35, -105);
+      context.closePath();
+      context.fill();
+      ellipse(context, -17, -83, 16, 18, entity.light);
+      ellipse(context, 17, -83, 16, 18, entity.light);
+      ellipse(context, -17, -83, 7, 9, entity.accent);
+      ellipse(context, 17, -83, 7, 9, entity.accent);
+      ellipse(context, -17, -83, 3, 5, entity.dark);
+      ellipse(context, 17, -83, 3, 5, entity.dark);
+      context.fillStyle = "#e9a64e";
+      context.beginPath();
+      context.moveTo(-7, -66); context.lineTo(0, -54); context.lineTo(7, -66);
+      context.closePath();
+      context.fill();
+      line(context, "#e9a64e", 5, () => {
+        context.moveTo(-13, -5); context.lineTo(-20, 2);
+        context.moveTo(13, -5); context.lineTo(20, 2);
+      });
+      if (entity.pencil) {
+        line(context, entity.dark, 2.5, () => {
+          context.ellipse(0, -67, 48, 64, 0, 0, Math.PI * 2);
+          context.ellipse(-17, -83, 16, 18, 0, 0, Math.PI * 2);
+          context.ellipse(17, -83, 16, 18, 0, 0, Math.PI * 2);
+        });
+      }
     } else if (entity.type === "bird") {
       ellipse(context, 0, -64, 55, 39, entity.color);
       context.save();
@@ -888,6 +1035,40 @@
         ellipse(context, 51, -18, 22, 22, entity.dark);
         ellipse(context, -48, -18, 8, 8, entity.accent);
         ellipse(context, 51, -18, 8, 8, entity.accent);
+      }
+    } else if (entity.type === "fox") {
+      context.fillStyle = entity.color;
+      context.beginPath();
+      context.moveTo(-32, -52);
+      context.quadraticCurveTo(-84, -92, -98, -56);
+      context.quadraticCurveTo(-83, -26, -48, -36);
+      context.closePath();
+      context.fill();
+      ellipse(context, -96, -56, 13, 12, entity.light);
+      ellipse(context, 0, -51, 47, 31, entity.color);
+      ellipse(context, 36, -88, 27, 25, entity.color);
+      context.beginPath();
+      context.moveTo(17, -103); context.lineTo(21, -137); context.lineTo(39, -108);
+      context.moveTo(39, -108); context.lineTo(59, -133); context.lineTo(59, -97);
+      context.closePath();
+      context.fill();
+      ellipse(context, 53, -78, 20, 12, entity.light);
+      ellipse(context, 43, -94, 4, 5, entity.dark);
+      ellipse(context, 70, -81, 5, 5, entity.dark);
+      line(context, entity.dark, 9, () => {
+        context.moveTo(-22, -27); context.lineTo(-27, 5 + legSwing);
+        context.moveTo(18, -27); context.lineTo(24, 5 - legSwing);
+        context.moveTo(35, -28); context.lineTo(39, 3 + legSwing);
+      });
+      if (entity.pencil) {
+        line(context, entity.dark, 2.5, () => {
+          context.ellipse(0, -51, 47, 31, 0, 0, Math.PI * 2);
+          context.ellipse(36, -88, 27, 25, 0, 0, Math.PI * 2);
+          context.moveTo(-32, -52);
+          context.quadraticCurveTo(-84, -92, -98, -56);
+          context.quadraticCurveTo(-83, -26, -48, -36);
+          context.closePath();
+        });
       }
     } else if (entity.type === "cat" || entity.type === "dog" || entity.type === "horse") {
       ellipse(context, 0, -49, entity.type === "horse" ? 57 : 48, 34, entity.color);
@@ -997,25 +1178,45 @@
 
   function render(time) {
     context.clearRect(0, 0, WIDTH, HEIGHT);
-    drawBackground(time);
-    if (state.scene === "rocket") drawRocket(time);
-    else if (state.scene === "cat") drawCat(time);
-    else if (state.scene === "flower") drawFlower(time);
-    else if (state.scene === "bird") drawBird(time);
-    else if (state.scene === "ball") drawBall(time);
-    else if (state.scene === "duel") drawDuel(time);
-    else if (state.scene === "generated") {
-      const count = state.generatedScene.entities.length;
+    if (state.scene === "generated") {
+      const scene = state.generatedScene;
+      const count = scene.entities.length;
       const portrait = FRAME_FORMATS[videoFormat.value].height > FRAME_FORMATS[videoFormat.value].width;
       const positions = count === 1 ? [480]
         : count === 2 ? (portrait ? [390, 570] : [350, 610])
           : (portrait ? [360, 480, 600] : [270, 480, 690]);
       const scale = count === 1 ? 1 : (count === 2 ? (portrait ? .66 : .82) : (portrait ? .52 : .65));
-      state.generatedScene.entities.forEach((entity, index) => {
-        drawGeneratedEntity(entity, positions[index], entity.y, scale, time, state.generatedScene.action);
+      context.save();
+      if (scene.cameraMotion) {
+        const zoom = 1.012 + Math.sin(time * .22) * .006;
+        context.translate(WIDTH / 2 + Math.sin(time * .28) * 7, HEIGHT / 2 + Math.cos(time * .2) * 4);
+        context.scale(zoom, zoom);
+        context.translate(-WIDTH / 2, -HEIGHT / 2);
+      }
+      drawBackground(time);
+      if (scene.lanterns) {
+        const lanterns = portrait ? [[355, 331], [605, 340]] : [[175, 335], [785, 330], [480, 306]];
+        lanterns.forEach(([x, y], index) => {
+          drawGeneratedLantern(x, y, .55, time, scene.lanternColor, .68 + Math.sin(time * 2 + index) * .12);
+        });
+      }
+      scene.entities.forEach((entity, index) => {
+        drawGeneratedEntity(entity, positions[index], entity.y, scale, time, scene.action);
+        if (scene.lanterns && index === 0) {
+          drawGeneratedLantern(positions[index] + 70 * scale, entity.y - 91 * scale, .42 * scale, time, scene.lanternColor, .95);
+        }
       });
+      context.restore();
+    } else {
+      drawBackground(time);
+      if (state.scene === "rocket") drawRocket(time);
+      else if (state.scene === "cat") drawCat(time);
+      else if (state.scene === "flower") drawFlower(time);
+      else if (state.scene === "bird") drawBird(time);
+      else if (state.scene === "ball") drawBall(time);
+      else if (state.scene === "duel") drawDuel(time);
+      else drawLandscape(time);
     }
-    else drawLandscape(time);
     timeline.value = String(time);
     timecode.textContent = formatTime(time);
   }
@@ -1024,12 +1225,12 @@
     const normalized = prompt.toLowerCase();
     if (/\b(sword|swordswoman|swordsman|samurai|fight|fighting|battle|combat|duel)\b/.test(normalized)) return "duel";
     const subjects = PROMPT_SUBJECTS.filter((subject) => subject.pattern.test(normalized));
-    const hasModifiers = /\b(space|galaxy|starry|stars?|planet|moon|cosmic|ocean|sea|underwater|beach|island|snow|winter|ice|frost|arctic|city|street|neon|building|skyscraper|urban|forest|woods|woodland|jungle|desert|dune|canyon|sunset|dusk|dawn|evening|night|dark|midnight|red|orange|yellow|green|blue|purple|pink|black|white|gold|silver|cyan|run|running|race|racing|chase|chasing|jump|jumping|leap|leaping|fly|flying|soar|soaring|swim|swimming|dance|dancing|spin|spinning|rotate|rotating)\b/.test(normalized);
+    const hasModifiers = /\b(space|galaxy|starry|stars?|planet|moon|cosmic|ocean|sea|underwater|beach|island|snow|winter|ice|frost|arctic|city|street|neon|building|skyscraper|urban|forest|woods|woodland|jungle|pine|pond|lake|desert|dune|canyon|sunset|dusk|dawn|evening|night|dark|midnight|red|orange|yellow|green|blue|purple|pink|black|white|gold|silver|cyan|amber|indigo|run|running|race|racing|chase|chasing|jump|jumping|leap|leaping|fly|flying|soar|soaring|swim|swimming|dance|dancing|spin|spinning|rotate|rotating)\b/.test(normalized);
     if (subjects.length <= 1 && !hasModifiers) {
       if (/\b(rocket|spaceship|space ship|spacecraft)\b/.test(normalized)) return "rocket";
       if (/\b(cat|kitten|kitty|feline)\b/.test(normalized)) return "cat";
       if (/\b(flower|daisy|tulip|blossom|rose)\b/.test(normalized)) return "flower";
-      if (/\b(bird|sparrow|parrot|owl|duck)\b/.test(normalized)) return "bird";
+      if (/\b(bird|sparrow|parrot|duck)\b/.test(normalized)) return "bird";
       if (/\b(ball|bouncing|bounce|football|basketball)\b/.test(normalized)) return "ball";
     }
     return "generated";
@@ -1058,9 +1259,15 @@
     const namedColors = {
       red: "#e85e58", orange: "#e98a45", yellow: "#f2cd56", green: "#55a875",
       blue: "#4c8ed1", purple: "#8768ba", pink: "#df83ae", black: "#3b3848",
-      white: "#eee9df", gold: "#d8aa4f", silver: "#9da8b0", cyan: "#45c8d7"
+      white: "#eee9df", gold: "#d8aa4f", silver: "#9da8b0", cyan: "#45c8d7",
+      amber: "#d99849", indigo: "#4c438a"
     };
-    const palette = palettes[seed % palettes.length];
+    const basePalette = palettes[seed % palettes.length];
+    const palette = {
+      ...basePalette,
+      accent: /\b(amber|gold)\b/.test(normalized) ? namedColors.amber : basePalette.accent,
+      dark: /\bindigo\b/.test(normalized) ? namedColors.indigo : basePalette.dark
+    };
     let subjectColor = palette.color;
     Object.keys(namedColors).some((color) => {
       if (!new RegExp(`\\b${color}\\b`).test(normalized)) return false;
@@ -1073,7 +1280,7 @@
       { pattern: /\b(ocean|sea|underwater|beach|island|ship|boat)\b/, value: "ocean" },
       { pattern: /\b(snow|winter|ice|frost|arctic)\b/, value: "snow" },
       { pattern: /\b(city|street|neon|building|skyscraper|urban)\b/, value: "city" },
-      { pattern: /\b(forest|woods|woodland|jungle)\b/, value: "forest" },
+      { pattern: /\b(forest|woods|woodland|jungle|pine)\b/, value: "forest" },
       { pattern: /\b(desert|dune|canyon)\b/, value: "desert" },
       { pattern: /\b(sunset|dusk|dawn|evening)\b/, value: "sunset" },
       { pattern: /\b(night|dark|midnight)\b/, value: "night" }
@@ -1087,6 +1294,12 @@
               : /\b(spin|spinning|rotate|rotating)\b/.test(normalized) ? "spin" : "float";
 
     const matchedSubjects = PROMPT_SUBJECTS.filter((subject) => subject.pattern.test(normalized)).slice(0, 3);
+    const forest = /\b(forest|woods|woodland|jungle|pine)\b/.test(normalized);
+    const pineForest = /\bpine(s)?\b/.test(normalized);
+    const pond = /\b(pond|lake)\b/.test(normalized);
+    const ice = /\b(ice|icy|frozen|freezing)\b/.test(normalized);
+    const lanterns = /\blanterns?\b/.test(normalized);
+    const lanternColor = /\b(amber|gold|orange)\b/.test(normalized) ? "#f5b64f" : "#ffd58a";
     const entities = (matchedSubjects.length ? matchedSubjects : [{ type: "abstract", name: "imaginative character" }])
       .map((subject, index) => {
         const variation = palettes[(seed + index * 3) % palettes.length];
@@ -1095,16 +1308,31 @@
           type: subject.type,
           name: subject.name,
           color: colorMatch,
-          accent: variation.accent,
-          dark: variation.dark,
+          accent: /\b(amber|gold)\b/.test(normalized) ? namedColors.amber : variation.accent,
+          dark: /\bindigo\b/.test(normalized) ? namedColors.indigo : variation.dark,
           light: variation.light,
           y: background === "ocean" && subject.type === "fish" ? 390 : (action === "fly" ? 350 : 420),
           cloak: /\b(cloak|cape|hooded)\b/.test(normalized) && subject.type === "person",
           weapon: /\b(sword|blade|wand|staff|spear)\b/.test(normalized) && subject.type === "person",
-          aircraft: /\b(plane|airplane|aircraft|helicopter)\b/.test(normalized)
+          aircraft: /\b(plane|airplane|aircraft|helicopter)\b/.test(normalized),
+          pencil: /\b(storybook|pencil|hand[- ]drawn)\b/.test(normalized)
         };
       });
-    return { seed, palette, background, action, entities };
+    return {
+      seed,
+      palette,
+      background,
+      action,
+      entities,
+      forest,
+      pineForest,
+      pond,
+      ice,
+      lanterns,
+      lanternColor,
+      cameraMotion: /\b(camera|parallax|cinematic)\b/.test(normalized),
+      watercolor: /\b(storybook|watercolor)\b/.test(normalized)
+    };
   }
 
   function updatePrompt() {
@@ -1201,6 +1429,10 @@
     })[character]);
   }
 
+  function generatedSvgLantern(x, y, scale, color) {
+    return `<g transform="translate(${x} ${y}) scale(${scale})"><circle r="26" fill="${color}" opacity=".28"><animate attributeName="opacity" values=".16;.38;.16" dur="1.8s" repeatCount="indefinite"/></circle><path d="M-8-20q8-16 16 0" fill="none" stroke="#554a55" stroke-width="3"/><rect x="-12" y="-20" width="24" height="37" rx="5" fill="#e9a64e"/><rect x="-8" y="-15" width="16" height="25" rx="4" fill="${color}"/><path d="M0-11q8 9 0 16-7-7 0-16Z" fill="#fff2b0"/></g>`;
+  }
+
   function generatedSvgEntity(entity, x, scale, action) {
     let subject;
     if (entity.type === "rocket") {
@@ -1211,6 +1443,10 @@
       subject = `<path d="m-18-55-65-61 31 71m47-10 57-69-10 86" fill="${entity.dark}"/><path d="M-48-12q-60 28-51-8M-18-7l-10 30m32-30 9 30" fill="none" stroke="${entity.dark}" stroke-width="12" stroke-linecap="round"/><ellipse cy="-34" rx="57" ry="48" fill="${entity.color}"/><circle cx="39" cy="-83" r="34" fill="${entity.color}"/><circle cx="52" cy="-88" r="5" fill="${entity.accent}"/>`;
     } else if (entity.type === "person") {
       subject = `<path d="m-24-77 48 0 14 66h-74Z" fill="${entity.color}"/><circle cy="-105" r="23" fill="${entity.light}"/><path d="M-23-111q3-33 33-21l13 27-19-11-15 7Z" fill="${entity.dark}"/><path d="m-22-3-9 39m52-39 12 39M-18-65l-26 32m62-32 25 23" fill="none" stroke="${entity.dark}" stroke-width="12" stroke-linecap="round"/>${entity.cloak ? `<path d="m-17-73-26 23-29 47 44-22Z" fill="${entity.accent}"/>` : ""}${entity.weapon ? `<path d="m43-42 67-62" stroke="${entity.accent}" stroke-width="6" stroke-linecap="round"/>` : ""}`;
+    } else if (entity.type === "owl") {
+      subject = `<path d="m-24-77-48-14 13 56 40 4m43-46 48-14-13 56-40 4" fill="${entity.dark}"/><ellipse cy="-67" rx="48" ry="64" fill="${entity.color}"/><ellipse cy="-43" rx="29" ry="34" fill="${entity.light}"/><path d="m-35-105 4-32 24 24m14 8 24-32 4 32" fill="${entity.color}"/><circle cx="-17" cy="-83" r="16" fill="${entity.light}"/><circle cx="17" cy="-83" r="16" fill="${entity.light}"/><circle cx="-17" cy="-83" r="7" fill="${entity.accent}"/><circle cx="17" cy="-83" r="7" fill="${entity.accent}"/><circle cx="-17" cy="-83" r="3" fill="${entity.dark}"/><circle cx="17" cy="-83" r="3" fill="${entity.dark}"/><path d="m-7-66 7 12 7-12Z" fill="#e9a64e"/>${entity.pencil ? `<ellipse cy="-67" rx="48" ry="64" fill="none" stroke="${entity.dark}" stroke-width="2.5"/>` : ""}`;
+    } else if (entity.type === "fox") {
+      subject = `<path d="M-32-52q-52-40-66-4 15 30 50 20Z" fill="${entity.color}"/><ellipse cy="-51" rx="47" ry="31" fill="${entity.color}"/><circle cx="36" cy="-88" r="27" fill="${entity.color}"/><path d="m17-103 4-34 18 29m0 0 20-25 0 36Z" fill="${entity.color}"/><ellipse cx="53" cy="-78" rx="20" ry="12" fill="${entity.light}"/><circle cx="43" cy="-94" r="4" fill="${entity.dark}"/><circle cx="70" cy="-81" r="5" fill="${entity.dark}"/><path d="m-22-27-5 32m45-32 6 32m14-31 4 30" stroke="${entity.dark}" stroke-width="9" stroke-linecap="round"/><ellipse cx="-96" cy="-56" rx="13" ry="12" fill="${entity.light}"/>${entity.pencil ? `<ellipse cy="-51" rx="47" ry="31" fill="none" stroke="${entity.dark}" stroke-width="2.5"/><circle cx="36" cy="-88" r="27" fill="none" stroke="${entity.dark}" stroke-width="2.5"/>` : ""}`;
     } else if (entity.type === "cat" || entity.type === "dog" || entity.type === "horse") {
       subject = `<ellipse cy="-49" rx="48" ry="34" fill="${entity.color}"/><circle cx="34" cy="-88" r="30" fill="${entity.color}"/><path d="M13-105 15-140 37-113m0 0 20-26 1 36" fill="${entity.color}"/><circle cx="40" cy="-94" r="4" fill="${entity.dark}"/><path d="m-20-24-4 32m39-32 3 32m-71-57-23 13" stroke="${entity.dark}" stroke-width="9" stroke-linecap="round"/>`;
     } else if (entity.type === "bird") {
@@ -1259,7 +1495,7 @@
     const viewY = (HEIGHT - viewHeight) / 2;
     if (state.scene === "generated") {
       const scene = state.generatedScene;
-      const background = scene.background === "space"
+      let background = scene.background === "space"
         ? `<circle cx="778" cy="112" r="42" fill="${scene.palette.accent}"/>${Array.from({ length: 54 }, (_, i) => `<circle cx="${(i * 193 + scene.seed * 7) % WIDTH}" cy="${(i * 97 + scene.seed * 3) % 440}" r="${i % 8 === 0 ? 2 : 1}" fill="#fff" opacity=".8"/>`).join("")}`
         : scene.background === "ocean"
           ? `<path d="M0 300h960v300H0Z" fill="#2388a4"/><path d="M0 360q120-20 240 0t240 0 240 0 240 0M0 430q120-20 240 0t240 0 240 0 240 0" fill="none" stroke="#bce9ed" stroke-width="5" opacity=".55"/>`
@@ -1274,17 +1510,46 @@
               : scene.background === "forest"
                 ? `<path d="M0 360q240-100 460 5t500-35v270H0Z" fill="#527a65"/>${Array.from({ length: 7 }, (_, i) => `<rect x="${i * 137 + 20}" y="245" width="18" height="230" fill="#5b413b"/><circle cx="${i * 137 + 28}" cy="252" r="54" fill="${i % 2 ? "#47785b" : "#598661"}"/>`).join("")}`
                 : `<path d="M0 430q230-105 455 0t505-40v210H0Z" fill="${scene.background === "desert" ? "#d88763" : "#83b78a"}"/><path d="M0 505q260-95 500 0t460-40v135H0Z" fill="${scene.palette.dark}"/>`;
+      if (scene.forest && (scene.background !== "forest" || scene.pineForest)) {
+        background += [48, 142, 235, 725, 818, 912].map((x, index) => {
+          const base = 438 + (index % 2) * 18;
+          const top = base - 145 - (index % 3) * 18;
+          const fill = index % 2 ? "#365f55" : "#477166";
+          return `<path d="M${x} ${top}l-27 50h54Z M${x} ${top + 34}l-20 50h40Z M${x} ${top + 68}l-13 50h26Z" fill="${fill}"/><path d="M${x - 5} ${base - 4}h10v48h-10Z" fill="#59483f"/>`;
+        }).join("");
+      }
+      if (scene.pond) {
+        background += `<ellipse cx="480" cy="526" rx="302" ry="65" fill="${scene.ice ? "#718f9e" : "#285d72"}"/><ellipse cx="480" cy="519" rx="278" ry="51" fill="${scene.ice ? "#abd8e0" : "#3787a0"}"/><path d="M270 507q70-13 123 1m112 18q85-18 173-2${scene.ice ? "m-298-19-23 20 15 12-24 14m32-46 27 14-11 16 27 13" : ""}" fill="none" stroke="${scene.ice ? "#63839a" : "#d7f4f4"}" stroke-width="4"/>`;
+      }
+      if (scene.watercolor) {
+        const colors = ["#6e89ad", "#e3a75d", "#73a68e", "#8f7fb2"];
+        background += Array.from({ length: 7 }, (_, i) => {
+          const x = (scene.seed + i * 173) % WIDTH;
+          const y = 110 + ((scene.seed >>> (i % 16)) + i * 67) % 360;
+          const radius = 72 + (i % 3) * 24;
+          return `<ellipse cx="${x}" cy="${y}" rx="${radius}" ry="${radius * .62}" fill="${colors[i % colors.length]}" opacity=".09"/>`;
+        }).join("");
+      }
+      const portrait = height > width;
+      const lanternPositions = portrait ? [[355, 331], [605, 340]] : [[175, 335], [785, 330], [480, 306]];
+      if (scene.lanterns) {
+        background += lanternPositions.map(([x, y], index) => generatedSvgLantern(x, y, .55, scene.lanternColor)).join("");
+      }
       const entities = scene.entities.map((entity, index) => {
         const count = scene.entities.length;
-        const portrait = height > width;
         const positions = count === 1 ? [480]
           : count === 2 ? (portrait ? [390, 570] : [350, 610])
             : (portrait ? [360, 480, 600] : [270, 480, 690]);
         const entityScale = count === 1 ? 1 : (count === 2 ? (portrait ? .66 : .82) : (portrait ? .52 : .65));
         const x = positions[index];
-        return generatedSvgEntity(entity, x, entityScale, scene.action);
+        const heldLantern = scene.lanterns && index === 0
+          ? generatedSvgLantern(x + 70 * entityScale, entity.y - 91 * entityScale, .42 * entityScale, scene.lanternColor)
+          : "";
+        return generatedSvgEntity(entity, x, entityScale, scene.action) + heldLantern;
       }).join("");
-      const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewX} ${viewY} ${viewWidth} ${viewHeight}" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${scene.background === "space" || scene.background === "night" ? "#17182e" : "#9bd1db"}"/><stop offset="1" stop-color="${scene.palette.dark}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${background}${entities}</svg>`;
+      const cameraStart = scene.cameraMotion ? `<g><animateTransform attributeName="transform" type="translate" values="-5 0;5 0;-5 0" dur="8s" repeatCount="indefinite" additive="sum"/><animateTransform attributeName="transform" type="scale" values="1;1.02;1" dur="8s" repeatCount="indefinite" additive="sum"/>` : "";
+      const cameraEnd = scene.cameraMotion ? "</g>" : "";
+      const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewX} ${viewY} ${viewWidth} ${viewHeight}" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${scene.background === "space" || scene.background === "night" ? "#17182e" : "#9bd1db"}"/><stop offset="1" stop-color="${scene.palette.dark}"/></linearGradient></defs>${cameraStart}<rect width="960" height="600" fill="url(#sky)"/>${background}${entities}${cameraEnd}</svg>`;
       downloadSvg(svg, `generated-${videoFormat.value}-animation.svg`);
       statusMessage.textContent = "Animated SVG downloaded — open it in your browser to play.";
       return;
