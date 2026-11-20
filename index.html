@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11111b">
+  <title>amr 2d — Local Animation Studio</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="amr 2d Animation Studio home">
+      <span class="brand-mark" aria-hidden="true">✳</span>
+      <span>amr 2d<span class="brand-light"> / studio</span></span>
+    </a>
+    <div class="local-status"><span class="status-dot"></span> LOCAL MODE <span class="status-divider">·</span> NO GENERATION LIMITS</div>
+    <button class="export-button" id="export-button" type="button">
+      <span aria-hidden="true">↧</span> Export SVG
+    </button>
+  </header>
+
+  <main class="workspace">
+    <section class="stage-column" aria-label="Animation preview">
+      <div class="stage-heading">
+        <div>
+          <p class="eyebrow">YOUR CANVAS <span class="eyebrow-dot">/</span> 01</p>
+          <h1 id="scene-title">A little rocket drifts through a starry night</h1>
+        </div>
+        <span class="live-badge"><span></span> LIVE PREVIEW</span>
+      </div>
+
+      <div class="stage-frame">
+        <canvas id="animation-canvas" width="960" height="600" aria-label="Animated preview of the generated scene">
+          Your browser does not support canvas. Use a current version of a modern browser.
+        </canvas>
+        <div class="canvas-caption"><span id="scene-label">ROCKET · NIGHT SKY</span><span>960 × 600</span></div>
+      </div>
+
+      <section id="ai-result" class="ai-result" hidden aria-label="Local AI video result">
+        <div class="ai-result-heading">
+          <h2>Local AI result</h2>
+          <a id="ai-download" download>Download video</a>
+        </div>
+        <video id="ai-video" controls playsinline></video>
+      </section>
+
+      <div class="transport">
+        <button class="play-button" id="play-button" type="button" aria-label="Pause animation">
+          <span id="play-icon" aria-hidden="true">Ⅱ</span>
+        </button>
+        <span class="timecode" id="timecode">00:00</span>
+        <input id="timeline" class="timeline" type="range" min="0" max="8" value="0" step="0.01" aria-label="Animation timeline">
+        <span class="timecode time-end">00:08</span>
+        <span class="transport-divider"></span>
+        <label class="fps-control" for="fps-select">FPS
+          <select id="fps-select" aria-label="Preview frame rate">
+            <option value="12">12</option>
+            <option value="24" selected>24</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+          </select>
+        </label>
+      </div>
+
+      <p class="canvas-note"><span aria-hidden="true">✦</span> Live preview · Use the controls to play, scrub, or export</p>
+    </section>
+
+    <aside class="control-panel" aria-label="Scene controls">
+      <div class="panel-top">
+        <div>
+          <p class="eyebrow">SCENE BUILDER <span class="eyebrow-dot">/</span> 02</p>
+          <h2>Make something move.</h2>
+        </div>
+        <span class="sparkle" aria-hidden="true">✳</span>
+      </div>
+
+      <form id="prompt-form">
+        <label class="field-label" for="prompt-input">DESCRIBE YOUR ANIMATION</label>
+        <div class="prompt-box">
+          <textarea id="prompt-input" rows="5" maxlength="240" spellcheck="true">A little rocket drifts through a starry night</textarea>
+          <div class="reference-frames" id="reference-frames" aria-live="polite"></div>
+          <div class="prompt-footer">
+            <label class="add-frame-button" for="frame-input" aria-label="Add reference frames" title="Add reference frames">+</label>
+            <input id="frame-input" class="visually-hidden" type="file" accept="image/*" multiple aria-label="Choose reference frame images">
+            <span class="frame-help">Add reference frames <span>· kept local</span></span>
+            <span id="character-count">47 / 240</span>
+          </div>
+        </div>
+        <button class="generate-button" type="submit"><span aria-hidden="true">✦</span> Generate animation <span class="button-arrow" aria-hidden="true">↗</span></button>
+      </form>
+
+      <details id="motion-details" class="tool-accordion motion-accordion">
+        <summary><span>Motion &amp; keyframes</span><span class="tool-summary-meta" id="keyframe-count">0 keyframes</span></summary>
+        <div class="accordion-body">
+          <div class="motion-toolbar">
+            <p>Scrub the timeline, add a key, then adjust the pose.</p>
+            <button class="add-keyframe-button" id="add-keyframe" type="button">＋ Add key</button>
+          </div>
+          <div class="keyframe-track" id="keyframe-track" aria-label="Keyframes on the animation timeline">
+            <span class="track-rail" aria-hidden="true"></span>
+          </div>
+          <div class="keyframe-controls">
+            <label class="keyframe-value">X <input id="keyframe-x" type="range" min="-260" max="260" value="0" step="1" disabled><output id="keyframe-x-value">0 px</output></label>
+            <label class="keyframe-value">Y <input id="keyframe-y" type="range" min="-170" max="170" value="0" step="1" disabled><output id="keyframe-y-value">0 px</output></label>
+            <label class="keyframe-value">ROT <input id="keyframe-rotation" type="range" min="-180" max="180" value="0" step="1" disabled><output id="keyframe-rotation-value">0°</output></label>
+            <button class="remove-keyframe-button" id="remove-keyframe" type="button" disabled aria-label="Remove selected keyframe">Remove</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="tool-accordion ai-panel">
+        <summary><span>Local AI video</span><span class="tool-summary-meta">ComfyUI · on device</span></summary>
+        <div class="accordion-body">
+          <p class="ai-panel-copy">For a strong but storage-conscious setup, try a distilled FP8 model. LTX-Video 13B distilled FP8 favors quality; 2B distilled FP8 uses less space with some quality trade-off. Both still need local disk and GPU memory.</p>
+          <p class="model-link"><a href="https://huggingface.co/Lightricks/LTX-Video" target="_blank" rel="noreferrer">Compare official LTX-Video models ↗</a></p>
+          <button class="ai-connect-button" id="ai-connect-button" type="button">Connect to ComfyUI</button>
+          <label class="workflow-file-button" for="workflow-input">Choose API workflow JSON</label>
+          <input id="workflow-input" class="visually-hidden" type="file" accept=".json,application/json">
+          <p id="workflow-status" class="workflow-status">No workflow loaded</p>
+          <button class="ai-generate-button" id="ai-generate-button" type="button" disabled>Generate with local AI</button>
+          <button class="cancel-video-button" id="cancel-ai-button" type="button" hidden>Cancel AI generation</button>
+          <p class="ai-help">Use a trusted API workflow with <code>{{PROMPT}}</code>, a duration placeholder, and <code>{{FPS}}</code>. Models are not bundled; prompts stay on this computer. Reference images are not sent to the model.</p>
+        </div>
+      </details>
+
+      <div class="video-export">
+        <div class="video-export-heading">
+          <label class="field-label" for="video-length">VIDEO LENGTH</label>
+          <select id="video-length" aria-label="Video length">
+            <option value="60">1 minute</option>
+            <option value="180">3 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+        </div>
+        <button class="video-button" id="video-button" type="button"><span aria-hidden="true">●</span> Create WebM video</button>
+        <button class="cancel-video-button" id="cancel-video-button" type="button" hidden>Cancel recording</button>
+        <p class="video-help">Recorded locally in real time. Keep this tab open while it renders.</p>
+      </div>
+
+      <p class="panel-footnote">Local AI has no service quota, but requires a downloaded model and capable hardware. Procedural fallback supports rocket, cat, flower, bird, ball, and landscape scenes.</p>
+      <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+    </aside>
+  </main>
+  <footer class="footer"><span>AMR 2D STUDIO</span><span>MADE FOR SMALL, MOVING THINGS <span class="footer-star">✳</span></span></footer>
+</body>
+</html>
