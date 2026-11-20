@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11111b">
   <title>amr 2d — Local Animation Studio</title>
-  <link rel="stylesheet" href="styles.css?v=playback-line-1">
-  <script src="app.js?v=timeline-2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=1080-format-1">
+  <script src="app.js?v=1080-format-1" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -31,10 +31,10 @@
       </div>
 
       <div class="stage-frame">
-        <canvas id="animation-canvas" width="960" height="600" aria-label="Animated preview of the generated scene">
+        <canvas id="animation-canvas" width="1920" height="1080" aria-label="Animated preview of the generated scene">
           Your browser does not support canvas. Use a current version of a modern browser.
         </canvas>
-        <div class="canvas-caption"><span id="scene-label">ROCKET · NIGHT SKY</span><span>960 × 600</span></div>
+        <div class="canvas-caption"><span id="scene-label">ROCKET · NIGHT SKY</span><span id="frame-size">1920 × 1080</span></div>
       </div>
 
       <div class="transport">
@@ -68,13 +68,25 @@
       <form id="prompt-form">
         <label class="field-label" for="prompt-input">DESCRIBE YOUR ANIMATION</label>
         <div class="prompt-box">
-          <textarea id="prompt-input" rows="5" maxlength="240" spellcheck="true">A little rocket drifts through a starry night</textarea>
+          <textarea id="prompt-input" rows="5" spellcheck="true">A little rocket drifts through a starry night</textarea>
           <div class="reference-frames" id="reference-frames" aria-live="polite"></div>
           <div class="prompt-footer">
             <label class="add-frame-button" for="frame-input" aria-label="Add reference frames" title="Add reference frames">+</label>
             <input id="frame-input" class="visually-hidden" type="file" accept="image/*" multiple aria-label="Choose reference frame images">
             <span class="frame-help">Add reference frames <span>· kept local</span></span>
-            <span id="character-count">47 / 240</span>
+            <span id="character-count">47 chars</span>
+          </div>
+          <div class="prompt-options">
+            <label class="frame-format-control" for="video-format"><span>FORMAT</span>
+              <select id="video-format" aria-label="Social video format">
+                <option value="youtube">YouTube · 16:9</option>
+                <option value="tiktok">TikTok · 9:16</option>
+                <option value="shorts">YouTube Shorts · 9:16</option>
+                <option value="instagram">Instagram Feed · 4:5</option>
+                <option value="reels">Instagram Reels · 9:16</option>
+                <option value="facebook">Facebook · 16:9</option>
+              </select>
+            </label>
           </div>
         </div>
         <button class="generate-button" id="generate-video-button" type="submit"><span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span></button>

@@ -4,6 +4,14 @@
   const WIDTH = 960;
   const HEIGHT = 600;
   const FPS = 60;
+  const FRAME_FORMATS = {
+    youtube: { width: 1920, height: 1080 },
+    tiktok: { width: 1080, height: 1920 },
+    shorts: { width: 1080, height: 1920 },
+    instagram: { width: 1080, height: 1350 },
+    reels: { width: 1080, height: 1920 },
+    facebook: { width: 1920, height: 1080 }
+  };
   const canvas = document.querySelector("#animation-canvas");
   const context = canvas.getContext("2d");
   const promptInput = document.querySelector("#prompt-input");
@@ -18,6 +26,8 @@
   const statusMessage = document.querySelector("#status-message");
   const characterCount = document.querySelector("#character-count");
   const exportButton = document.querySelector("#export-button");
+  const videoFormat = document.querySelector("#video-format");
+  const frameSize = document.querySelector("#frame-size");
   const videoLength = document.querySelector("#video-length");
   const generateVideoButton = document.querySelector("#generate-video-button");
   const cancelVideoButton = document.querySelector("#cancel-video-button");
@@ -60,10 +70,13 @@
   }
 
   function resizeCanvas() {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(WIDTH * ratio);
-    canvas.height = Math.round(HEIGHT * ratio);
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const { width, height } = FRAME_FORMATS[videoFormat.value];
+    const scale = Math.max(width / WIDTH, height / HEIGHT);
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.aspectRatio = `${width} / ${height}`;
+    context.setTransform(scale, 0, 0, scale, (width - WIDTH * scale) / 2, (height - HEIGHT * scale) / 2);
+    frameSize.textContent = `${width} × ${height}`;
     render(state.time);
   }
 
@@ -404,10 +417,9 @@
   }
 
   function updatePrompt() {
-    const value = promptInput.value.trim();
-    characterCount.textContent = `${promptInput.value.length} / 240`;
+    characterCount.textContent = `${promptInput.value.length} chars`;
     statusMessage.textContent = "";
-    if (!value) {
+    if (!promptInput.value.trim()) {
       promptInput.setCustomValidity("Add a short scene description before generating.");
     } else {
       promptInput.setCustomValidity("");
@@ -485,6 +497,7 @@
     state.lastClock = 0;
     render(state.time);
   });
+  videoFormat.addEventListener("change", resizeCanvas);
   videoLength.addEventListener("change", updateTimelineDuration);
 
   function escapeXml(value) {
@@ -495,6 +508,12 @@
 
   function exportSvg() {
     const titleText = escapeXml(state.title);
+    const { width, height } = FRAME_FORMATS[videoFormat.value];
+    const scale = Math.max(width / WIDTH, height / HEIGHT);
+    const viewWidth = width / scale;
+    const viewHeight = height / scale;
+    const viewX = (WIDTH - viewWidth) / 2;
+    const viewY = (HEIGHT - viewHeight) / 2;
     const scenery = state.scene === "rocket"
       ? `<circle cx="780" cy="95" r="36" fill="#f5e8bd"/><circle cx="765" cy="84" r="36" fill="#252544"/>${Array.from({ length: 38 }, (_, i) => `<circle cx="${(i * 193 + 37) % WIDTH}" cy="${(i * 97 + 23) % 440}" r="${i % 9 === 0 ? 2.2 : 1}" fill="#fff3d4" opacity=".8"/>`).join("")}`
       : `<circle cx="781" cy="105" r="41" fill="#ffe8a3"/><path d="M0 446 Q194 340 396 432 T960 390 V600 H0Z" fill="#8cbd9c"/><path d="M0 501 Q267 418 503 505 T960 461 V600 H0Z" fill="#668e88"/><g fill="#fff" opacity=".65"><ellipse cx="145" cy="156" rx="43" ry="15"/><ellipse cx="515" cy="112" rx="43" ry="15"/><ellipse cx="813" cy="209" rx="43" ry="15"/></g>`;
@@ -516,11 +535,11 @@
     }
 
     const animationCss = ".float{animation:float 4s ease-in-out infinite}.bob{animation:bob 2s ease-in-out infinite}.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}.wing{transform-box:fill-box;transform-origin:top right;animation:flap .45s ease-in-out infinite alternate}.bounce{animation:bounce 2s cubic-bezier(.45,0,.55,1) infinite}.spin{transform-box:fill-box;transform-origin:center;animation:spin 3.2s linear infinite}@keyframes float{50%{transform:translate(0,-25px) rotate(-5deg)}}@keyframes bob{50%{transform:translateY(-18px)}}@keyframes sway{50%{transform:rotate(9deg)}}@keyframes flap{to{transform:rotate(-65deg)}}@keyframes bounce{0%,100%{transform:translateY(400px) scale(1,.92)}50%{transform:translateY(220px) scale(1,1)}}@keyframes spin{to{transform:rotate(360deg)}}";
-    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><style>${animationCss}</style><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${state.scene === "rocket" ? "#18182f" : "#a9d8e6"}"/><stop offset="1" stop-color="${state.scene === "rocket" ? "#37345a" : "#e5d4cb"}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${scenery}${subject}</svg>`;
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewX} ${viewY} ${viewWidth} ${viewHeight}" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><style>${animationCss}</style><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${state.scene === "rocket" ? "#18182f" : "#a9d8e6"}"/><stop offset="1" stop-color="${state.scene === "rocket" ? "#37345a" : "#e5d4cb"}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${scenery}${subject}</svg>`;
     const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${state.scene}-animation.svg`;
+    link.download = `${state.scene}-${videoFormat.value}-animation.svg`;
     document.body.append(link);
     link.click();
     link.remove();
@@ -596,6 +615,7 @@
       stream.getTracks().forEach((track) => track.stop());
       generateVideoButton.disabled = false;
       videoLength.disabled = false;
+      videoFormat.disabled = false;
       generateVideoButton.innerHTML = '<span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span>';
       cancelVideoButton.hidden = true;
       if (!recording || recording.cancelled) {
@@ -607,7 +627,7 @@
       if (generatedVideoUrl) URL.revokeObjectURL(generatedVideoUrl);
       generatedVideoUrl = URL.createObjectURL(blob);
       downloadVideoButton.href = generatedVideoUrl;
-      downloadVideoButton.download = `${state.scene}-${duration / 60}min.webm`;
+      downloadVideoButton.download = `${state.scene}-${videoFormat.value}-${duration / 60}min.webm`;
       downloadVideoButton.textContent = `Download ${duration / 60}-minute video`;
       downloadVideoButton.hidden = false;
       setPlayback(previousPlayback);
@@ -617,6 +637,7 @@
     activeRecording = { recorder, cancelled: false, stopTimer: null, progressTimer: null };
     generateVideoButton.disabled = true;
     videoLength.disabled = true;
+    videoFormat.disabled = true;
     generateVideoButton.textContent = "Generating video…";
     cancelVideoButton.hidden = false;
     setPlayback(true);
@@ -628,6 +649,7 @@
       stream.getTracks().forEach((track) => track.stop());
       generateVideoButton.disabled = false;
       videoLength.disabled = false;
+      videoFormat.disabled = false;
       generateVideoButton.innerHTML = '<span aria-hidden="true">✦</span> Generate video <span class="button-arrow" aria-hidden="true">↗</span>';
       cancelVideoButton.hidden = true;
       setPlayback(previousPlayback);
