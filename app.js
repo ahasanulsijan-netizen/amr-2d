@@ -4,21 +4,12 @@
   const WIDTH = 960;
   const HEIGHT = 600;
   const DURATION = 8;
-  const COMFYUI_API = "http://127.0.0.1:8188";
   const canvas = document.querySelector("#animation-canvas");
   const context = canvas.getContext("2d");
   const promptInput = document.querySelector("#prompt-input");
   const promptForm = document.querySelector("#prompt-form");
   const frameInput = document.querySelector("#frame-input");
   const referenceFramesContainer = document.querySelector("#reference-frames");
-  const aiConnectButton = document.querySelector("#ai-connect-button");
-  const workflowInput = document.querySelector("#workflow-input");
-  const workflowStatus = document.querySelector("#workflow-status");
-  const aiGenerateButton = document.querySelector("#ai-generate-button");
-  const cancelAIButton = document.querySelector("#cancel-ai-button");
-  const aiResult = document.querySelector("#ai-result");
-  const aiVideo = document.querySelector("#ai-video");
-  const aiDownload = document.querySelector("#ai-download");
   const playButton = document.querySelector("#play-button");
   const playIcon = document.querySelector("#play-icon");
   const timeline = document.querySelector("#timeline");
@@ -32,16 +23,6 @@
   const videoButton = document.querySelector("#video-button");
   const cancelVideoButton = document.querySelector("#cancel-video-button");
   const timecode = document.querySelector("#timecode");
-  const keyframeTrack = document.querySelector("#keyframe-track");
-  const keyframeCount = document.querySelector("#keyframe-count");
-  const addKeyframeButton = document.querySelector("#add-keyframe");
-  const removeKeyframeButton = document.querySelector("#remove-keyframe");
-  const keyframeX = document.querySelector("#keyframe-x");
-  const keyframeY = document.querySelector("#keyframe-y");
-  const keyframeRotation = document.querySelector("#keyframe-rotation");
-  const keyframeXValue = document.querySelector("#keyframe-x-value");
-  const keyframeYValue = document.querySelector("#keyframe-y-value");
-  const keyframeRotationValue = document.querySelector("#keyframe-rotation-value");
 
   const sceneNames = {
     rocket: "ROCKET · NIGHT SKY",
@@ -58,15 +39,10 @@
     time: 0,
     lastFrame: 0,
     lastDraw: 0,
-    lastClock: 0,
-    keyframes: [],
-    selectedKeyframe: null
+    lastClock: 0
   };
   const referenceFrames = [];
   let activeRecording = null;
-  let localAIConnected = false;
-  let localWorkflow = null;
-  let activeAIAbort = null;
 
   function resizeCanvas() {
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -389,93 +365,14 @@
   function render(time) {
     context.clearRect(0, 0, WIDTH, HEIGHT);
     drawBackground(time);
-    const pose = poseAt(time);
-    context.save();
-    context.translate(WIDTH / 2 + pose.x, HEIGHT / 2 + pose.y);
-    context.rotate(pose.rotation * Math.PI / 180);
-    context.translate(-WIDTH / 2, -HEIGHT / 2);
     if (state.scene === "rocket") drawRocket(time);
     else if (state.scene === "cat") drawCat(time);
     else if (state.scene === "flower") drawFlower(time);
     else if (state.scene === "bird") drawBird(time);
     else if (state.scene === "ball") drawBall(time);
     else drawLandscape(time);
-    context.restore();
     timeline.value = String(time);
     timecode.textContent = `00:${String(Math.floor(time)).padStart(2, "0")}`;
-  }
-
-  function poseAt(time) {
-    const keys = state.keyframes.slice().sort((a, b) => a.time - b.time);
-    if (!keys.length || keys[0].time > 0) keys.unshift({ time: 0, x: 0, y: 0, rotation: 0 });
-    if (keys[keys.length - 1].time < DURATION) keys.push({ time: DURATION, x: 0, y: 0, rotation: 0 });
-    let before = keys[0];
-    let after = keys[keys.length - 1];
-    for (let i = 1; i < keys.length; i += 1) {
-      if (keys[i].time >= time) {
-        before = keys[i - 1];
-        after = keys[i];
-        break;
-      }
-    }
-    const span = after.time - before.time;
-    const progress = span > 0 ? Math.max(0, Math.min(1, (time - before.time) / span)) : 0;
-    return {
-      x: before.x + (after.x - before.x) * progress,
-      y: before.y + (after.y - before.y) * progress,
-      rotation: before.rotation + (after.rotation - before.rotation) * progress
-    };
-  }
-
-  function renderKeyframes() {
-    keyframeTrack.querySelectorAll(".keyframe-marker").forEach((marker) => marker.remove());
-    keyframeCount.textContent = `${state.keyframes.length} keyframe${state.keyframes.length === 1 ? "" : "s"}`;
-    state.keyframes.forEach((keyframe, index) => {
-      const marker = document.createElement("button");
-      marker.type = "button";
-      marker.className = "keyframe-marker";
-      marker.style.left = `${(keyframe.time / DURATION) * 100}%`;
-      marker.title = `Keyframe at ${keyframe.time.toFixed(2)} seconds`;
-      marker.setAttribute("aria-label", `Select keyframe at ${keyframe.time.toFixed(2)} seconds`);
-      marker.setAttribute("aria-pressed", String(index === state.selectedKeyframe));
-      if (index === state.selectedKeyframe) marker.classList.add("selected");
-      marker.addEventListener("click", () => {
-        state.selectedKeyframe = index;
-        state.time = keyframe.time;
-        state.lastClock = 0;
-        renderKeyframes();
-        syncKeyframeControls();
-        render(state.time);
-      });
-      keyframeTrack.append(marker);
-    });
-  }
-
-  function syncKeyframeControls() {
-    const selected = state.keyframes[state.selectedKeyframe];
-    const controls = [keyframeX, keyframeY, keyframeRotation];
-    controls.forEach((control) => { control.disabled = !selected; });
-    removeKeyframeButton.disabled = !selected;
-    if (!selected) {
-      keyframeXValue.value = "0 px";
-      keyframeYValue.value = "0 px";
-      keyframeRotationValue.value = "0°";
-      return;
-    }
-    keyframeX.value = String(selected.x);
-    keyframeY.value = String(selected.y);
-    keyframeRotation.value = String(selected.rotation);
-    keyframeXValue.value = `${selected.x} px`;
-    keyframeYValue.value = `${selected.y} px`;
-    keyframeRotationValue.value = `${selected.rotation}°`;
-  }
-
-  function editSelectedKeyframe(property, value) {
-    const selected = state.keyframes[state.selectedKeyframe];
-    if (!selected) return;
-    selected[property] = Number(value);
-    syncKeyframeControls();
-    render(state.time);
   }
 
   function selectScene(prompt) {
@@ -501,225 +398,6 @@
       promptInput.setCustomValidity("");
     }
   }
-
-  function updateAIGenerateButton() {
-    aiGenerateButton.disabled = !localAIConnected || !localWorkflow || Boolean(activeAIAbort);
-  }
-
-  async function readJsonResponse(response) {
-    const text = await response.text();
-    let data;
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch {
-      throw new Error(`Local AI returned invalid JSON (HTTP ${response.status}).`);
-    }
-    if (!response.ok) {
-      const message = typeof data.error === "string" ? data.error : `Local AI request failed (HTTP ${response.status}).`;
-      throw new Error(message);
-    }
-    return data;
-  }
-
-  aiConnectButton.addEventListener("click", async () => {
-    aiConnectButton.disabled = true;
-    workflowStatus.textContent = "Checking the local ComfyUI connection…";
-    try {
-      await readJsonResponse(await fetch(`${COMFYUI_API}/queue`, { cache: "no-store" }));
-      localAIConnected = true;
-      aiConnectButton.textContent = "ComfyUI connected";
-      workflowStatus.textContent = localWorkflow
-        ? `Connected · ${workflowInput.files[0] ? workflowInput.files[0].name : "API workflow loaded"}`
-        : "Connected to ComfyUI. Load a trusted API workflow JSON.";
-    } catch (error) {
-      localAIConnected = false;
-      aiConnectButton.textContent = "Connect to ComfyUI";
-      workflowStatus.textContent = `${error.message} Start ComfyUI with CORS enabled for this app's origin.`;
-    } finally {
-      aiConnectButton.disabled = false;
-      updateAIGenerateButton();
-    }
-  });
-
-  workflowInput.addEventListener("change", async () => {
-    const file = workflowInput.files && workflowInput.files[0];
-    if (!file) return;
-    try {
-      const workflow = JSON.parse(await file.text());
-      const nodes = workflow && typeof workflow === "object" && !Array.isArray(workflow)
-        ? Object.values(workflow)
-        : [];
-      const isApiWorkflow = nodes.some((node) =>
-        node && typeof node.class_type === "string" && node.inputs && typeof node.inputs === "object"
-      );
-      if (!isApiWorkflow) {
-        throw new Error("Choose a ComfyUI API-format workflow JSON, not the regular UI workflow.");
-      }
-      const serialized = JSON.stringify(workflow);
-      if (!serialized.includes("{{PROMPT}}")) {
-        throw new Error("Add {{PROMPT}} to the positive prompt node in your workflow, then export it in API format.");
-      }
-      if (!serialized.includes("{{FPS}}")) {
-        throw new Error("Add {{FPS}} to a frame-rate input in your workflow.");
-      }
-      if (!serialized.includes("{{DURATION_SECONDS}}") && !serialized.includes("{{TOTAL_FRAMES}}")) {
-        throw new Error("Add {{DURATION_SECONDS}} or {{TOTAL_FRAMES}} to the workflow so the selected video length is passed through.");
-      }
-      localWorkflow = workflow;
-      workflowStatus.textContent = `${file.name} loaded · prompt, duration, and FPS inputs found`;
-    } catch (error) {
-      localWorkflow = null;
-      workflowStatus.textContent = error.message;
-    } finally {
-      updateAIGenerateButton();
-      workflowInput.value = "";
-    }
-  });
-
-  function replaceWorkflowValues(value, values) {
-    if (Array.isArray(value)) return value.map((item) => replaceWorkflowValues(item, values));
-    if (value && typeof value === "object") {
-      return Object.fromEntries(Object.entries(value).map(([key, item]) => [
-        key,
-        replaceWorkflowValues(item, values)
-      ]));
-    }
-    if (typeof value !== "string") return value;
-    const exactToken = /^\{\{(PROMPT|DURATION_SECONDS|TOTAL_FRAMES|FPS)\}\}$/.exec(value);
-    if (exactToken) return values[exactToken[1]];
-    return value.replace(/\{\{(PROMPT|DURATION_SECONDS|TOTAL_FRAMES|FPS)\}\}/g, (_token, name) =>
-      String(values[name])
-    );
-  }
-
-  function findVideoOutput(history, promptId) {
-    const record = history[promptId] || history;
-    if (!record || !record.outputs || typeof record.outputs !== "object") return null;
-    for (const nodeOutput of Object.values(record.outputs)) {
-      for (const outputType of ["videos", "gifs"]) {
-        const files = nodeOutput && nodeOutput[outputType];
-        if (!Array.isArray(files)) continue;
-        const match = files.find((file) =>
-          file && typeof file.filename === "string" && /\.(mp4|webm|mov|mkv)$/i.test(file.filename)
-        );
-        if (match) return { ...match, type: match.type || "output" };
-      }
-    }
-    return null;
-  }
-
-  function wait(milliseconds, signal) {
-    return new Promise((resolve, reject) => {
-      if (signal.aborted) {
-        reject(new DOMException("Generation cancelled.", "AbortError"));
-        return;
-      }
-      const onAbort = () => {
-        window.clearTimeout(timer);
-        signal.removeEventListener("abort", onAbort);
-        reject(new DOMException("Generation cancelled.", "AbortError"));
-      };
-      const timer = window.setTimeout(() => {
-        signal.removeEventListener("abort", onAbort);
-        resolve();
-      }, milliseconds);
-      signal.addEventListener("abort", onAbort, { once: true });
-    });
-  }
-
-  async function pollComfyUI(promptId, signal) {
-    const started = Date.now();
-    while (Date.now() - started < 2 * 60 * 60 * 1000) {
-      await wait(1500, signal);
-      const history = await readJsonResponse(await fetch(
-        `${COMFYUI_API}/history/${encodeURIComponent(promptId)}`,
-        { cache: "no-store", signal }
-      ));
-      const record = history[promptId] || history;
-      const output = findVideoOutput(history, promptId);
-      if (output) return output;
-      if (record && record.status && record.status.completed) {
-        throw new Error("ComfyUI finished, but the workflow did not produce an MP4, WebM, MOV, or MKV video.");
-      }
-      const elapsed = Math.floor((Date.now() - started) / 1000);
-      workflowStatus.textContent = `Local model is rendering… ${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")} elapsed`;
-    }
-    throw new Error("Local AI generation exceeded the two-hour wait limit. Check ComfyUI for its current job status.");
-  }
-
-  aiGenerateButton.addEventListener("click", async () => {
-    const prompt = promptInput.value.trim();
-    if (!prompt) {
-      promptInput.reportValidity();
-      return;
-    }
-    if (!localAIConnected || !localWorkflow) return;
-    const seconds = Number(videoLength.value);
-    const fps = Number(fpsSelect.value);
-    const values = {
-      PROMPT: prompt,
-      DURATION_SECONDS: seconds,
-      TOTAL_FRAMES: seconds * fps,
-      FPS: fps
-    };
-    const controller = new AbortController();
-    activeAIAbort = controller;
-    updateAIGenerateButton();
-    cancelAIButton.hidden = false;
-    cancelAIButton.disabled = false;
-    workflowStatus.textContent = "Submitting your prompt to the local model…";
-    try {
-      const submitted = await readJsonResponse(await fetch(`${COMFYUI_API}/prompt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: replaceWorkflowValues(localWorkflow, values),
-          client_id: crypto.randomUUID
-            ? crypto.randomUUID()
-            : `amr2d-${Date.now()}-${Math.random().toString(16).slice(2)}`
-        }),
-        signal: controller.signal
-      }));
-      if (typeof submitted.prompt_id !== "string") {
-        throw new Error("ComfyUI accepted no prompt ID; check that the loaded workflow is valid.");
-      }
-      workflowStatus.textContent = "Prompt queued in ComfyUI. The local model is starting…";
-      const output = await pollComfyUI(submitted.prompt_id, controller.signal);
-      const url = `${COMFYUI_API}/view?${new URLSearchParams({
-        filename: output.filename,
-        subfolder: output.subfolder || "",
-        type: output.type
-      })}`;
-      aiVideo.src = url;
-      aiDownload.href = url;
-      aiDownload.download = output.filename;
-      aiResult.hidden = false;
-      aiVideo.load();
-      workflowStatus.textContent = `Video ready · ${output.filename}`;
-    } catch (error) {
-      if (error.name === "AbortError") {
-        workflowStatus.textContent = "Local AI generation cancelled.";
-      } else {
-        workflowStatus.textContent = error.message;
-      }
-    } finally {
-      activeAIAbort = null;
-      cancelAIButton.hidden = true;
-      updateAIGenerateButton();
-    }
-  });
-
-  cancelAIButton.addEventListener("click", async () => {
-    if (!activeAIAbort) return;
-    cancelAIButton.disabled = true;
-    workflowStatus.textContent = "Interrupting the current local ComfyUI job…";
-    try {
-      await readJsonResponse(await fetch(`${COMFYUI_API}/interrupt`, { method: "POST" }));
-    } catch (error) {
-      workflowStatus.textContent = `Could not interrupt ComfyUI: ${error.message}`;
-    }
-    activeAIAbort.abort();
-  });
 
   function renderReferenceFrames() {
     referenceFramesContainer.replaceChildren();
@@ -769,10 +447,6 @@
     state.scene = selectScene(prompt);
     state.title = prompt;
     state.time = 0;
-    state.keyframes = [];
-    state.selectedKeyframe = null;
-    renderKeyframes();
-    syncKeyframeControls();
     title.textContent = prompt;
     sceneLabel.textContent = sceneNames[state.scene];
     state.playing = true;
@@ -794,35 +468,6 @@
     state.lastClock = 0;
     render(state.time);
   });
-
-  addKeyframeButton.addEventListener("click", () => {
-    const existingIndex = state.keyframes.findIndex((keyframe) => Math.abs(keyframe.time - state.time) < .04);
-    if (existingIndex >= 0) {
-      state.selectedKeyframe = existingIndex;
-    } else {
-      const pose = poseAt(state.time);
-      state.keyframes.push({ time: state.time, ...pose });
-      state.keyframes.sort((a, b) => a.time - b.time);
-      state.selectedKeyframe = state.keyframes.findIndex((keyframe) => keyframe.time === state.time);
-    }
-    renderKeyframes();
-    syncKeyframeControls();
-    statusMessage.textContent = `Keyframe added at ${state.time.toFixed(2)} seconds.`;
-  });
-
-  removeKeyframeButton.addEventListener("click", () => {
-    if (state.selectedKeyframe === null) return;
-    state.keyframes.splice(state.selectedKeyframe, 1);
-    state.selectedKeyframe = null;
-    renderKeyframes();
-    syncKeyframeControls();
-    render(state.time);
-    statusMessage.textContent = "Keyframe removed.";
-  });
-
-  keyframeX.addEventListener("input", () => editSelectedKeyframe("x", keyframeX.value));
-  keyframeY.addEventListener("input", () => editSelectedKeyframe("y", keyframeY.value));
-  keyframeRotation.addEventListener("input", () => editSelectedKeyframe("rotation", keyframeRotation.value));
 
   function escapeXml(value) {
     return value.replace(/[<>&'"]/g, (character) => ({
@@ -852,14 +497,8 @@
       subject = `<g class="bob"><ellipse cx="480" cy="393" rx="29" ry="41" fill="#f2ae83"/><circle cx="480" cy="342" r="32" fill="#f4cba3"/><path d="M448 339a32 32 0 0 1 64 0" fill="#563f49"/><circle cx="469" cy="339" r="3" fill="#53413d"/><circle cx="491" cy="339" r="3" fill="#53413d"/><path d="m458 407-15 40m58-40 16 40" stroke="#e79877" stroke-width="11" stroke-linecap="round"/></g>`;
     }
 
-    const motionKeys = state.keyframes.slice().sort((a, b) => a.time - b.time);
-    if (!motionKeys.length || motionKeys[0].time > 0) motionKeys.unshift({ time: 0, x: 0, y: 0, rotation: 0 });
-    if (motionKeys[motionKeys.length - 1].time < DURATION) motionKeys.push({ time: DURATION, x: 0, y: 0, rotation: 0 });
-    const userMotion = state.keyframes.length
-      ? `@keyframes userMotion{${motionKeys.map((keyframe) => `${(keyframe.time / DURATION) * 100}%{transform:translate(${keyframe.x}px,${keyframe.y}px) rotate(${keyframe.rotation}deg);animation-timing-function:linear}`).join("")}}.keyframed-subject{transform-box:view-box;transform-origin:center;animation:userMotion ${DURATION}s linear infinite}`
-      : "";
-    const animationCss = ".float{animation:float 4s ease-in-out infinite}.bob{animation:bob 2s ease-in-out infinite}.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}.wing{transform-box:fill-box;transform-origin:top right;animation:flap .45s ease-in-out infinite alternate}.bounce{animation:bounce 2s cubic-bezier(.45,0,.55,1) infinite}.spin{transform-box:fill-box;transform-origin:center;animation:spin 3.2s linear infinite}@keyframes float{50%{transform:translate(0,-25px) rotate(-5deg)}}@keyframes bob{50%{transform:translateY(-18px)}}@keyframes sway{50%{transform:rotate(9deg)}}@keyframes flap{to{transform:rotate(-65deg)}}@keyframes bounce{0%,100%{transform:translateY(400px) scale(1,.92)}50%{transform:translateY(220px) scale(1,1)}}@keyframes spin{to{transform:rotate(360deg)}}" + userMotion;
-    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><style>${animationCss}</style><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${state.scene === "rocket" ? "#18182f" : "#a9d8e6"}"/><stop offset="1" stop-color="${state.scene === "rocket" ? "#37345a" : "#e5d4cb"}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${scenery}<g class="keyframed-subject">${subject}</g></svg>`;
+    const animationCss = ".float{animation:float 4s ease-in-out infinite}.bob{animation:bob 2s ease-in-out infinite}.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}.wing{transform-box:fill-box;transform-origin:top right;animation:flap .45s ease-in-out infinite alternate}.bounce{animation:bounce 2s cubic-bezier(.45,0,.55,1) infinite}.spin{transform-box:fill-box;transform-origin:center;animation:spin 3.2s linear infinite}@keyframes float{50%{transform:translate(0,-25px) rotate(-5deg)}}@keyframes bob{50%{transform:translateY(-18px)}}@keyframes sway{50%{transform:rotate(9deg)}}@keyframes flap{to{transform:rotate(-65deg)}}@keyframes bounce{0%,100%{transform:translateY(400px) scale(1,.92)}50%{transform:translateY(220px) scale(1,1)}}@keyframes spin{to{transform:rotate(360deg)}}";
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><style>${animationCss}</style><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${state.scene === "rocket" ? "#18182f" : "#a9d8e6"}"/><stop offset="1" stop-color="${state.scene === "rocket" ? "#37345a" : "#e5d4cb"}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${scenery}${subject}</svg>`;
     const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
@@ -1002,8 +641,6 @@
   }
 
   updatePrompt();
-  renderKeyframes();
-  syncKeyframeControls();
   resizeCanvas();
   requestAnimationFrame(animate);
   window.addEventListener("resize", resizeCanvas);

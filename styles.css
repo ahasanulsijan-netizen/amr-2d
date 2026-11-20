@@ -137,19 +137,6 @@ canvas { width: 100%; aspect-ratio: 8 / 5; display: block; }
 }
 .canvas-caption span:last-child { color: #aaa9b7; }
 
-.ai-result {
-  margin-top: 15px;
-  padding: 14px;
-  border: 1px solid #444052;
-  border-radius: 8px;
-  background: #191923;
-}
-.ai-result[hidden] { display: none; }
-.ai-result-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
-.ai-result-heading h2 { margin: 0; font-size: 15px; }
-.ai-result-heading a { color: var(--lime); font-size: 11px; }
-.ai-result video { display: block; width: 100%; max-height: 65vh; border-radius: 5px; background: #090910; }
-
 .transport {
   min-height: 59px;
   display: flex;
@@ -194,70 +181,6 @@ canvas { width: 100%; aspect-ratio: 8 / 5; display: block; }
 .fps-control select option { background: #1c1c27; }
 .canvas-note { color: #8f8e9b; font-size: 11px; margin: 14px 0 0; }
 .canvas-note span { color: var(--purple); margin-right: 5px; }
-
-.tool-accordion {
-  margin-top: 11px;
-  overflow: hidden;
-  border: 1px solid #34333f;
-  border-radius: 7px;
-  background: rgba(255,255,255,.018);
-}
-.tool-accordion > summary {
-  min-height: 43px;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  color: #e6e3ec;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  list-style: none;
-}
-.tool-accordion > summary::-webkit-details-marker { display: none; }
-.tool-accordion > summary::after { content: "+"; color: #a7a4b1; font-size: 15px; font-weight: 400; }
-.tool-accordion[open] > summary { border-bottom: 1px solid #34333f; }
-.tool-accordion[open] > summary::after { content: "−"; }
-.tool-summary-meta { color: #858390; font: 9px "DM Mono", Consolas, monospace; font-weight: 400; margin-left: auto; }
-.accordion-body { padding: 12px; }
-.motion-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.motion-toolbar p { margin: 0; color: #a09eab; font-size: 9px; line-height: 1.4; }
-.add-keyframe-button {
-  flex: none;
-  border: 1px solid #4a4855;
-  border-radius: 5px;
-  padding: 6px 8px;
-  background: #22212b;
-  color: #d7d4e0;
-  font-size: 10px;
-  cursor: pointer;
-}
-.add-keyframe-button:hover { border-color: var(--purple); color: #d8d0ff; }
-.keyframe-track { position: relative; height: 30px; margin: 3px 10px 8px; }
-.track-rail { position: absolute; top: 14px; right: 0; left: 0; height: 2px; background: #464450; }
-.keyframe-marker {
-  position: absolute;
-  z-index: 1;
-  top: 8px;
-  width: 14px;
-  height: 14px;
-  padding: 0;
-  border: 2px solid #1b1b25;
-  border-radius: 3px;
-  background: #a898fa;
-  transform: translateX(-50%) rotate(45deg);
-  cursor: pointer;
-}
-.keyframe-marker:hover, .keyframe-marker.selected { background: var(--lime); box-shadow: 0 0 10px rgba(211,243,107,.45); }
-.keyframe-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 9px; }
-.keyframe-value { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 7px; color: #a4a2af; font: 9px "DM Mono", Consolas, monospace; }
-.keyframe-value input { width: 100%; min-width: 35px; accent-color: var(--purple); }
-.keyframe-value output { grid-column: 2; justify-self: end; margin-top: -5px; color: #d3d1dc; font-size: 9px; }
-.keyframe-value input:disabled { opacity: .35; }
-.remove-keyframe-button { justify-self: end; border: 0; background: transparent; color: #898795; font-size: 9px; cursor: pointer; }
-.remove-keyframe-button:disabled { opacity: .35; cursor: default; }
-.remove-keyframe-button:not(:disabled):hover { color: #ff9a9a; }
 
 .control-panel {
   position: relative;
@@ -354,50 +277,6 @@ textarea {
 .generate-button > span:first-child { margin-right: 6px; }
 .button-arrow { float: right; margin-right: 14px; font-size: 16px; font-weight: 500; }
 
-.ai-panel {
-  border: 1px solid rgba(168,152,250,.34);
-  background: linear-gradient(140deg, rgba(168,152,250,.09), rgba(168,152,250,.025));
-}
-.ai-panel[open] > summary { border-bottom-color: rgba(168,152,250,.26); }
-.ai-panel > summary { color: #dcd5ff; }
-.ai-panel > summary::after { color: #b7aaff; }
-.ai-panel-copy { margin: 0; color: #aaa8b5; font-size: 10px; }
-.model-link { margin: 7px 0 0; font-size: 9px; }
-.model-link a { color: #c4b8ff; }
-.ai-panel .tool-summary-meta { color: #b5aacd; }
-.ai-connect-button, .workflow-file-button {
-  width: 100%;
-  display: block;
-  margin-top: 10px;
-  padding: 8px 10px;
-  border: 1px solid #494652;
-  border-radius: 5px;
-  background: #24232e;
-  color: #e2dfec;
-  font-size: 10px;
-  text-align: center;
-  cursor: pointer;
-}
-.ai-connect-button:hover, .workflow-file-button:hover { border-color: #a898fa; }
-.workflow-status { margin: 7px 0 0; color: #8f8d9c; font-size: 9px; overflow-wrap: anywhere; }
-.ai-generate-button {
-  width: 100%;
-  margin-top: 9px;
-  padding: 10px;
-  border: 1px solid #8274cc;
-  border-radius: 5px;
-  background: #7465b9;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.ai-generate-button:disabled { opacity: .42; cursor: not-allowed; }
-.ai-generate-button:not(:disabled):hover { background: #8575cf; }
-.ai-panel .cancel-video-button { color: #ffaaaa; }
-.ai-help { margin: 9px 0 0; color: #9693a2; font-size: 9px; line-height: 1.55; }
-.ai-help code { color: #ded8ff; font: 9px "DM Mono", Consolas, monospace; }
-
 .video-export { margin-top: 15px; padding: 13px; border: 1px solid #373642; border-radius: 7px; background: rgba(255,255,255,.018); }
 .video-export-heading { display: flex; justify-content: space-between; align-items: center; }
 .video-export-heading .field-label { margin: 0; }
@@ -469,8 +348,4 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   .transport { gap: 8px; padding: 0 8px; }
   .timecode { font-size: 9px; }
   .footer { font-size: 7px; }
-  .accordion-body { padding: 10px; }
-  .keyframe-controls { gap: 7px; }
-  .keyframe-value { gap: 3px; font-size: 8px; }
-  .remove-keyframe-button { padding: 3px; }
 }
