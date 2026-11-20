@@ -41,7 +41,8 @@
     flower: "FLOWER · GARDEN",
     bird: "BIRD · OPEN SKY",
     ball: "BALL · BOUNCE STUDY",
-    landscape: "LITTLE WORLD · DAYLIGHT"
+    landscape: "LITTLE WORLD · DAYLIGHT",
+    duel: "SWORD FIGHT · RUINED BRIDGE"
   };
   const state = {
     scene: "rocket",
@@ -107,6 +108,10 @@
     if (state.scene === "rocket") {
       sky.addColorStop(0, "#18182f");
       sky.addColorStop(1, "#37345a");
+    } else if (state.scene === "duel") {
+      sky.addColorStop(0, "#29203f");
+      sky.addColorStop(.58, "#a94e5a");
+      sky.addColorStop(1, "#ef9a63");
     } else {
       sky.addColorStop(0, "#a9d8e6");
       sky.addColorStop(1, "#e5d4cb");
@@ -128,6 +133,54 @@
       context.beginPath();
       context.ellipse(485, 510, 420, 73, 0, Math.PI, Math.PI * 2);
       context.fill();
+      return;
+    }
+
+    if (state.scene === "duel") {
+      ellipse(context, 744, 190, 62, 62, "#ffd49a");
+      context.fillStyle = "#342438";
+      context.beginPath();
+      context.moveTo(0, 340);
+      context.lineTo(130, 300);
+      context.lineTo(235, 337);
+      context.lineTo(378, 284);
+      context.lineTo(510, 338);
+      context.lineTo(710, 292);
+      context.lineTo(840, 334);
+      context.lineTo(960, 296);
+      context.lineTo(960, 600);
+      context.lineTo(0, 600);
+      context.closePath();
+      context.fill();
+      context.fillStyle = "#241f30";
+      context.fillRect(60, 270, 56, 122);
+      context.fillRect(48, 260, 80, 18);
+      context.fillRect(76, 222, 22, 38);
+      context.fillRect(829, 248, 58, 140);
+      context.fillRect(818, 237, 80, 18);
+      context.fillRect(846, 195, 24, 42);
+      context.fillStyle = "#55404a";
+      context.beginPath();
+      context.moveTo(0, 440);
+      context.lineTo(960, 440);
+      context.lineTo(960, 600);
+      context.lineTo(0, 600);
+      context.closePath();
+      context.fill();
+      context.fillStyle = "#6b4c52";
+      for (let row = 0; row < 3; row += 1) {
+        const y = 470 + row * 42;
+        context.fillRect(0, y, 960, 2);
+        for (let column = 0; column < 10; column += 1) {
+          const x = column * 112 + (row % 2) * 55;
+          context.fillRect(x, y - 25, 2, 25);
+        }
+      }
+      for (let i = 0; i < 16; i += 1) {
+        const x = (i * 181 + t * (12 + i % 4) + WIDTH) % WIDTH;
+        const y = 270 + ((i * 73 + t * 9) % 160);
+        ellipse(context, x, y, 1.5 + (i % 3), 1.5 + (i % 3), `rgba(255, 164, 112, ${.28 + .2 * Math.sin(t + i)})`);
+      }
       return;
     }
 
@@ -390,6 +443,104 @@
     line(context, "#e79877", 11, () => { context.moveTo(501, 407); context.lineTo(517, 447 - Math.sin(t * 2) * 8); });
   }
 
+  function drawDuel(t) {
+    const cloakWave = Math.sin(t * 3) * 13;
+    const swordSwing = Math.sin(t * 2.8) * .16;
+    const demonBreath = Math.sin(t * 1.8) * 5;
+
+    ellipse(context, 390, 433, 58, 12, "rgba(15,14,25,.35)");
+    ellipse(context, 594, 435, 80, 15, "rgba(15,14,25,.4)");
+
+    context.save();
+    context.translate(390, 420);
+    context.fillStyle = "#a52649";
+    context.beginPath();
+    context.moveTo(-12, -95);
+    context.lineTo(-45, -72);
+    context.lineTo(-76, -14 + cloakWave);
+    context.lineTo(-31, -30);
+    context.lineTo(12, -52);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#29263b";
+    context.beginPath();
+    context.moveTo(-17, -88);
+    context.lineTo(16, -88);
+    context.lineTo(31, -27);
+    context.lineTo(-26, -27);
+    context.closePath();
+    context.fill();
+    line(context, "#29263b", 13, () => { context.moveTo(-13, -32); context.lineTo(-28, 4); context.lineTo(-51, 16); });
+    line(context, "#29263b", 13, () => { context.moveTo(14, -31); context.lineTo(37, 2); context.lineTo(58, 6); });
+    line(context, "#d99177", 10, () => { context.moveTo(14, -76); context.lineTo(37, -67); context.lineTo(52, -80); });
+    ellipse(context, 0, -112, 21, 24, "#e9b08f");
+    context.fillStyle = "#272336";
+    context.beginPath();
+    context.moveTo(-20, -116);
+    context.quadraticCurveTo(-15, -152, 15, -137);
+    context.lineTo(25, -108);
+    context.lineTo(7, -119);
+    context.lineTo(-8, -112);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#f4d0b4";
+    context.fillRect(6, -113, 3, 3);
+
+    context.save();
+    context.translate(51, -80);
+    context.rotate(swordSwing);
+    line(context, "#553946", 8, () => { context.moveTo(-2, 0); context.lineTo(13, -10); });
+    context.shadowColor = "#51eaff";
+    context.shadowBlur = 18;
+    line(context, "rgba(50, 222, 255, .45)", 14, () => { context.moveTo(10, -9); context.lineTo(148, -83); });
+    line(context, "#8af7ff", 5, () => { context.moveTo(10, -9); context.lineTo(148, -83); });
+    context.shadowBlur = 0;
+    context.fillStyle = "#ecfcff";
+    context.beginPath();
+    context.arc(112, -62, 9 + Math.sin(t * 12) * 2, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+    context.restore();
+
+    context.save();
+    context.translate(594, 426);
+    context.fillStyle = "#211d31";
+    context.beginPath();
+    context.ellipse(0, -58 + demonBreath, 50, 82, 0, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.moveTo(-31, -116);
+    context.lineTo(-46, -157);
+    context.lineTo(-10, -132);
+    context.lineTo(7, -137);
+    context.lineTo(39, -164);
+    context.lineTo(32, -119);
+    context.closePath();
+    context.fill();
+    line(context, "#211d31", 20, () => { context.moveTo(-26, -91); context.lineTo(-77, -115); context.lineTo(-103, -90); });
+    line(context, "#211d31", 20, () => { context.moveTo(27, -91); context.lineTo(63, -118); context.lineTo(81, -102); });
+    line(context, "#211d31", 10, () => { context.moveTo(-22, 2); context.lineTo(-32, 32); });
+    line(context, "#211d31", 10, () => { context.moveTo(23, 3); context.lineTo(37, 30); });
+    line(context, "#211d31", 8, () => {
+      context.moveTo(39, -35);
+      context.quadraticCurveTo(112, -20, 86 + Math.sin(t * 2) * 8, 24);
+    });
+    ellipse(context, -14, -103, 5, 3, "#ff686e");
+    ellipse(context, 15, -103, 5, 3, "#ff686e");
+    line(context, "#ff686e", 3, () => { context.moveTo(-6, -82); context.lineTo(7, -78); });
+    context.restore();
+
+    context.save();
+    context.globalCompositeOperation = "lighter";
+    context.shadowColor = "#71f4ff";
+    context.shadowBlur = 20;
+    for (let i = 0; i < 7; i += 1) {
+      const angle = (i / 7) * Math.PI * 2 + t * 3;
+      ellipse(context, 548 + Math.cos(angle) * (12 + (i % 2) * 4), 340 + Math.sin(angle) * (12 + (i % 3) * 3), 2, 2, "#8af7ff");
+    }
+    context.restore();
+  }
+
   function render(time) {
     context.clearRect(0, 0, WIDTH, HEIGHT);
     drawBackground(time);
@@ -398,6 +549,7 @@
     else if (state.scene === "flower") drawFlower(time);
     else if (state.scene === "bird") drawBird(time);
     else if (state.scene === "ball") drawBall(time);
+    else if (state.scene === "duel") drawDuel(time);
     else drawLandscape(time);
     timeline.value = String(time);
     timecode.textContent = formatTime(time);
@@ -406,6 +558,7 @@
   function selectScene(prompt) {
     const normalized = prompt.toLowerCase();
     const matches = [
+      ["duel", /\b(sword|swordswoman|swordsman|samurai|warrior|fight|fighting|battle|combat|duel|demon|monster)\b/],
       ["rocket", /\b(rocket|spaceship|space ship|astronaut|spacecraft)\b/],
       ["cat", /\b(cat|kitten|kitty|feline)\b/],
       ["flower", /\b(flower|daisy|tulip|blossom|rose)\b/],
@@ -516,10 +669,14 @@
     const viewY = (HEIGHT - viewHeight) / 2;
     const scenery = state.scene === "rocket"
       ? `<circle cx="780" cy="95" r="36" fill="#f5e8bd"/><circle cx="765" cy="84" r="36" fill="#252544"/>${Array.from({ length: 38 }, (_, i) => `<circle cx="${(i * 193 + 37) % WIDTH}" cy="${(i * 97 + 23) % 440}" r="${i % 9 === 0 ? 2.2 : 1}" fill="#fff3d4" opacity=".8"/>`).join("")}`
-      : `<circle cx="781" cy="105" r="41" fill="#ffe8a3"/><path d="M0 446 Q194 340 396 432 T960 390 V600 H0Z" fill="#8cbd9c"/><path d="M0 501 Q267 418 503 505 T960 461 V600 H0Z" fill="#668e88"/><g fill="#fff" opacity=".65"><ellipse cx="145" cy="156" rx="43" ry="15"/><ellipse cx="515" cy="112" rx="43" ry="15"/><ellipse cx="813" cy="209" rx="43" ry="15"/></g>`;
+      : state.scene === "duel"
+        ? `<circle cx="744" cy="190" r="62" fill="#ffd49a"/><path d="M0 340 130 300 235 337 378 284 510 338 710 292 840 334 960 296V600H0Z" fill="#342438"/><path d="M60 392V270h56v122M48 278v-18h80v18m-52-18v-38h22v38M829 392V248h58v144m-69-137v-18h80v18m-52-18v-42h24v42" fill="#241f30"/><path d="M0 440h960v160H0Z" fill="#55404a"/><g stroke="#6b4c52" stroke-width="2"><path d="M0 470h960M0 512h960M0 554h960"/><path d="M55 445v25m112 0v42m112-67v25m112 0v42m112-67v25m112 0v42m112-67v25m112 0v42m-840 0v42m112-42v42m112-42v42m112-42v42m112-42v42m112-42v42m112-42v42"/></g>`
+        : `<circle cx="781" cy="105" r="41" fill="#ffe8a3"/><path d="M0 446 Q194 340 396 432 T960 390 V600 H0Z" fill="#8cbd9c"/><path d="M0 501 Q267 418 503 505 T960 461 V600 H0Z" fill="#668e88"/><g fill="#fff" opacity=".65"><ellipse cx="145" cy="156" rx="43" ry="15"/><ellipse cx="515" cy="112" rx="43" ry="15"/><ellipse cx="813" cy="209" rx="43" ry="15"/></g>`;
 
     let subject = "";
-    if (state.scene === "rocket") {
+    if (state.scene === "duel") {
+      subject = `<g transform="translate(390 420)"><path d="M-12 -95 -45 -72 -76 -14 -31 -30 12 -52Z" fill="#a52649"><animateTransform attributeName="transform" type="skewX" values="0;-3;0" dur="2.8s" repeatCount="indefinite"/></path><path d="m-17-88 33 0 15 61h-57Z" fill="#29263b"/><path d="m-13-32-38 48m65-47 44 43" fill="none" stroke="#29263b" stroke-width="13" stroke-linecap="round"/><circle cy="-112" r="21" fill="#e9b08f"/><path d="M-20-116q5-36 35-21l10 29-18-11-15 7Z" fill="#272336"/><circle cx="8" cy="-113" r="2" fill="#f4d0b4"/><g class="duel-blade"><path d="m48-79 149-79" fill="none" stroke="#35dfff" stroke-width="13" opacity=".4"/><path d="m48-79 149-79" fill="none" stroke="#8af7ff" stroke-width="4"/><path d="m42-75 13-9" stroke="#553946" stroke-width="8" stroke-linecap="round"/></g></g><g transform="translate(594 426)" class="duel-demon"><ellipse cy="-58" rx="50" ry="82" fill="#211d31"/><path d="m-31-116-15-41 36 25 17-5 32-27-7 45Z" fill="#211d31"/><path d="m-26-91-77-24m130 24 36-27" fill="none" stroke="#211d31" stroke-width="20" stroke-linecap="round"/><path d="m-22 2-10 30m55-29 14 27m25-62q73 15 47 59" fill="none" stroke="#211d31" stroke-width="10" stroke-linecap="round"/><ellipse cx="-14" cy="-103" rx="5" ry="3" fill="#ff686e"/><ellipse cx="15" cy="-103" rx="5" ry="3" fill="#ff686e"/><path d="m-6-82 13 4" stroke="#ff686e" stroke-width="3"/></g><g class="duel-spark" fill="#8af7ff"><circle cx="536" cy="340" r="4"/><circle cx="551" cy="330" r="3"/><circle cx="558" cy="349" r="3"/></g>`;
+    } else if (state.scene === "rocket") {
       subject = `<g transform="translate(485 296) rotate(-9)"><g class="float"><path d="M-23 67 Q-46 117 -26 112 Q-5 110 -12 66Z" fill="#ff865c"/><path d="M-36 37 -66 68 -30 62M28 37 61 68 27 62" fill="#f4effb"/><path d="M-37 -32 Q-37 -67 0 -70 Q37 -67 37 -32 V43 Q37 70 0 70 Q-37 70 -37 43Z" fill="#f4effb"/><path d="M-32 -40 Q0 -88 32 -40Z" fill="#f5a1a8"/><circle cy="-2" r="18" fill="#8cc9df"/><circle cy="-2" r="12" fill="#314b73"/><circle cx="-5" cy="-8" r="4" fill="white"/></g></g>`;
     } else if (state.scene === "cat") {
       subject = `<g transform="translate(480 425)"><g class="bob"><path d="M43 -30 Q90 -30 75 -80 Q73 -98 109 -82" fill="none" stroke="#d08b67" stroke-width="13" stroke-linecap="round"/><ellipse cy="-27" rx="55" ry="39" fill="#e8ac81"/><circle cy="-94" r="45" fill="#efb98e"/><path d="M-42 -116 -31 -157 -4 -127 M6 -127 37 -154 42 -111" fill="#efb98e"/><path d="M-22 -96v2m40-2v2" stroke="#493b44" stroke-width="5" stroke-linecap="round"/><path d="M-27 -80q27 12 54 0" fill="none" stroke="#bd6f78" stroke-width="3"/><ellipse cx="-27" cy="6" rx="11" ry="24" fill="#d99872"/><ellipse cx="27" cy="6" rx="11" ry="24" fill="#d99872"/></g></g>`;
@@ -534,8 +691,10 @@
       subject = `<g class="bob"><ellipse cx="480" cy="393" rx="29" ry="41" fill="#f2ae83"/><circle cx="480" cy="342" r="32" fill="#f4cba3"/><path d="M448 339a32 32 0 0 1 64 0" fill="#563f49"/><circle cx="469" cy="339" r="3" fill="#53413d"/><circle cx="491" cy="339" r="3" fill="#53413d"/><path d="m458 407-15 40m58-40 16 40" stroke="#e79877" stroke-width="11" stroke-linecap="round"/></g>`;
     }
 
-    const animationCss = ".float{animation:float 4s ease-in-out infinite}.bob{animation:bob 2s ease-in-out infinite}.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}.wing{transform-box:fill-box;transform-origin:top right;animation:flap .45s ease-in-out infinite alternate}.bounce{animation:bounce 2s cubic-bezier(.45,0,.55,1) infinite}.spin{transform-box:fill-box;transform-origin:center;animation:spin 3.2s linear infinite}@keyframes float{50%{transform:translate(0,-25px) rotate(-5deg)}}@keyframes bob{50%{transform:translateY(-18px)}}@keyframes sway{50%{transform:rotate(9deg)}}@keyframes flap{to{transform:rotate(-65deg)}}@keyframes bounce{0%,100%{transform:translateY(400px) scale(1,.92)}50%{transform:translateY(220px) scale(1,1)}}@keyframes spin{to{transform:rotate(360deg)}}";
-    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewX} ${viewY} ${viewWidth} ${viewHeight}" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><style>${animationCss}</style><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${state.scene === "rocket" ? "#18182f" : "#a9d8e6"}"/><stop offset="1" stop-color="${state.scene === "rocket" ? "#37345a" : "#e5d4cb"}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${scenery}${subject}</svg>`;
+    const animationCss = ".float{animation:float 4s ease-in-out infinite}.bob{animation:bob 2s ease-in-out infinite}.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}.wing{transform-box:fill-box;transform-origin:top right;animation:flap .45s ease-in-out infinite alternate}.bounce{animation:bounce 2s cubic-bezier(.45,0,.55,1) infinite}.spin{transform-box:fill-box;transform-origin:center;animation:spin 3.2s linear infinite}.duel-blade{transform-origin:48px -79px;animation:blade .8s ease-in-out infinite alternate}.duel-demon{animation:demon 2s ease-in-out infinite alternate}.duel-spark{animation:spark .28s ease-in-out infinite alternate}@keyframes float{50%{transform:translate(0,-25px) rotate(-5deg)}}@keyframes bob{50%{transform:translateY(-18px)}}@keyframes sway{50%{transform:rotate(9deg)}}@keyframes flap{to{transform:rotate(-65deg)}}@keyframes bounce{0%,100%{transform:translateY(400px) scale(1,.92)}50%{transform:translateY(220px) scale(1,1)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes blade{to{transform:rotate(5deg)}}@keyframes demon{to{transform:translateY(4px)}}@keyframes spark{to{opacity:.3;transform:scale(.7)}}";
+    const skyTop = state.scene === "rocket" ? "#18182f" : (state.scene === "duel" ? "#29203f" : "#a9d8e6");
+    const skyBottom = state.scene === "rocket" ? "#37345a" : (state.scene === "duel" ? "#ef9a63" : "#e5d4cb");
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewX} ${viewY} ${viewWidth} ${viewHeight}" role="img" aria-labelledby="title desc"><title id="title">${titleText}</title><desc id="desc">Locally generated, animated procedural vector scene. Open this SVG in a browser to play.</desc><style>${animationCss}</style><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${skyTop}"/><stop offset="1" stop-color="${skyBottom}"/></linearGradient></defs><rect width="960" height="600" fill="url(#sky)"/>${scenery}${subject}</svg>`;
     const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
