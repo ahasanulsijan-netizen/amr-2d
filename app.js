@@ -1109,10 +1109,12 @@
   }
 
   function updatePrompt() {
-    characterCount.textContent = `${promptInput.value.length} chars`;
+    characterCount.textContent = `${promptInput.value.length} chars · no limit`;
+    promptInput.style.height = "auto";
+    promptInput.style.height = `${promptInput.scrollHeight}px`;
     statusMessage.textContent = "";
     if (!promptInput.value.trim()) {
-      promptInput.setCustomValidity("Add a short scene description before generating.");
+      promptInput.setCustomValidity("Add a scene description before generating.");
     } else {
       promptInput.setCustomValidity("");
     }
